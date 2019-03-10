@@ -31,17 +31,15 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
 
         def url = new URL ("file:${configFile}")
 
-        //slurper.parse(configText)
+        //https://stackoverflow.com/questions/55092121/cant-get-groovy-configslurper-to-parse-a-string-and-find-result-as-property/55093357#55093357
+        def config = slurper.parse(configText)
 
-        slurper.parse """host = 'localhost'"""
-
-        def val = slurper.getProperty("host")
 
         switch (messagePlatformType?.toUpperCase()) {
             case "WLS" :
             case "WEBLOGIC" :
-                def mp = slurper.messagePlatform
-                Map wls = slurper.messagePlatform.weglogic
+                def mp = config.messagePlatform
+                Map wls = config.messagePlatform.weglogic
                 String providerUrl = "${wls.protocol}://${wls.hostname}:${wls.port}"
                 String defaultProviderUrl = wls.defaultProviderUrl
                 if (!env.getProperty("senderSecurityCredentials")) {
