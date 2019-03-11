@@ -15,26 +15,43 @@ import javax.jms.TopicConnectionFactory
 import javax.jms.TopicSession
 import javax.naming.Context
 import javax.naming.NamingException
+import java.security.InvalidParameterException
+
+
+enum JmsConnectionType {
+    Sender,
+    Receiver
+}
 
 /**
  * weblogic jms platform client factor
  */
 class WlsJmsMessagePlatform implements MessageSystemClient {
 
+    private ThreadLocal<Environment> wlsenv
+    private ThreadLocal<Context> ctx
     private static Context senderCtx  //two contexts required?
     private static Context receiverCtx
     static Environment senderWlsenv
     static Environment receiverWlsenv
-    private static String QCF_NAME = "jms/queueConnectionFactory"
-    private static String QTF_NAME = "jms/topicConnectionFactory"
-    private static QueueConnectionFactory qcf = null
-    private static TopicConnectionFactory qtf = null
-    private static ThreadLocal<QueueConnection> qc = null
-    private static ThreadLocal<TopicConnection> tc = null
-    private static ThreadLocal<QueueSession> qsession = null
-    private static ThreadLocal<TopicSession> tsession = null
-    private static ThreadLocal<QueueSender> qsendr = null
-    private static ThreadLocal<QueueReceiver> qrecvr = null
+    private String senderPrinciple
+    private String receiverPrinciple
+    private String QCF_NAME = "jms/queueConnectionFactory"
+    private String QTF_NAME = "jms/topicConnectionFactory"
+    private QueueConnectionFactory qcf = null
+    private TopicConnectionFactory qtf = null
+    private ThreadLocal<QueueConnection> senderqc = null
+    private ThreadLocal<TopicConnection> sendertc = null
+    private ThreadLocal<QueueConnection> receiverqc = null
+    private ThreadLocal<TopicConnection> receivertc = null
+    private ThreadLocal<QueueSession> senderQsession = null
+    private ThreadLocal<QueueSession> receiverQsession = null
+    private  ThreadLocal<TopicSession> publisherTsession = null
+    private  ThreadLocal<TopicSession> subscriberTsession = null
+    private  ThreadLocal<QueueSender> qsender = null
+    private  ThreadLocal<QueueReceiver> qreceiver = null
+    private  ThreadLocal<TopicPublisher> tpublisher = null
+    private  ThreadLocal<TopicSubscriber> tsubscriber = null
 
 
 
@@ -44,24 +61,38 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         /*properties.put(Context.INITIAL_CONTEXT_FACTORY,
                 "weblogic.jndi.WLInitialContextFactory")*/
 
-        String providerUrl = env.providerUrl ?: env.defaultProviderUrl
-        String senderPrincipal = env.senderSecurityPrincipal
-        String senderCredentials = env.senderSecurityCredentials
+        String providerUrl = env?.providerUrl ?: env?.defaultProviderUrl
+        if (!providerUrl) {
+            throw new InvalidParameterException("providerUrl ($providerUrl) is not a valid JMS provider")
+            System.exit(-1)
+        }
+        senderPrinciple = env.mvaSenderSecurityPrincipal
+        String senderCredentials = env.mvaSenderSecurityCredential
 
-        senderWlsenv = new Environment()
+        wlsenv.set(new Environment ())
+        wlsenv.get().setProviderUrl (providerUrl)
+        try {
+            ctx.set (wlsenv.get().getInitialContext())//new InitialContext(properties)
+        } catch (NamingException ne) {
+            ne.printStackTrace(System.err)
+            System.exit(0)
+        }
+
+/*        senderWlsenv = new Environment()
         senderWlsenv.setProviderUrl(providerUrl)
         senderWlsenv.setSecurityPrincipal(senderPrincipal)
         senderWlsenv.setSecurityCredentials(senderCredentials)
         try {
             senderCtx =  senderWlsenv.getInitialContext()//new InitialContext(properties)
+            senderCtx
         } catch (NamingException ne) {
             ne.printStackTrace(System.err)
             System.exit(0)
         }
 
         providerUrl = env.providerUrl ?: env.defaultProviderUrl
-        String receiverPrincipal = env.receiverSecurityPrincipal
-        String receiverCredentials = env.receiverSecurityCredentials
+        receiverPrinciple = env.mvaReceiverSecurityPrincipal
+        String receiverCredentials = env.mvaReceiverSecurityCredentials
 
         receiverWlsenv = new Environment()
         receiverWlsenv.setProviderUrl(providerUrl)
@@ -73,6 +104,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
             ne.printStackTrace(System.err)
             System.exit(0)
         }
+        */
 
     }
 
@@ -92,10 +124,11 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         return QTF_NAME
     }
 
-    QueueConnection createQueueConnection () {
+    QueueConnection createQueueConnection (JmsConnectionType type) {
+        QueueConnection qc
         if (!qcf) {
             try {
-                qcf = (QueueConnectionFactory)senderCtx.lookup(QCF_NAME)
+                qcf = (QueueConnectionFactory)ctx.get().lookup(QCF_NAME)
             }
             catch (NamingException ne) {
                 ne.printStackTrace(System.err)
@@ -104,34 +137,45 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         }
 
         try {
-            //set thread local connection
-            qc.set(qcf.createQueueConnection())
+            //set thread local connection {
+            if (type == JmsConnectionType.Sender) {
+                String senderCredential = wlsenv.get().getProperty('mvaSenderSecurityCredentials')
+                qc = senderqc.set(qcf.createQueueConnection(senderPrinciple, senderCredential))
+            } else if (type == JmsConnectionType.Receiver) {
+                String receiverCredential = wlsenv.get().getProperty('mvaRecieverSecurityCredentials')
+                qc = receiverqc.set(qcf.createQueueConnection(receiverPrinciple, receiverCredential))
+            }
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)
             System.exit(0)
         }
-        qc.get()
+        qc
     }
 
-    QueueSession createQueueSession () {
+    QueueSession createQueueSession (JmsConnectionType type) {
         // create QueueSession
+        QueueSession qs
         try {
             // set thread local session
-            qsession.set (qc.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
+            if (type == JmsConnectionType.Sender) {
+                senderQsession.set(qs = senderqc.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
+            } else if (type == JmsConnectionType.Receiver) {
+                receiverQsession.set(qs= receiverqc.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
+            }
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)
             System.exit(0)
         }
-        qsession.get()
+        qs
     }
 
     Queue getQueue (String queueName) {
         // lookup Queue
         Queue queue
         try {
-            queue = (Queue) senderCtx.lookup(queueName)
+            queue = (Queue) ctx.get().lookup(queueName)
         }
         catch (NamingException ne) {
             ne.printStackTrace(System.err)
@@ -146,8 +190,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         // create QueueReceiver
         QueueReceiver receiver
         try {
-            qsession.get().createReceiver(q)
-            qrecvr.set (receiver =  qsession.get().createReceiver(q))
+            qreceiver.set (receiver =  receiverQsession.get().createReceiver(q))
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)

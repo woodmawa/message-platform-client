@@ -21,6 +21,7 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
 
     MessageSystemClient getMessagePlatformInstance (String messagePlatformType) {
         slurper = new ConfigSlurper()
+        String providerUrl, senderCredentials, receiverCredentials
 
         ClassLoader classLoader = getClass().getClassLoader()
         File configFile = new File(classLoader.getResource("ApplicationConfig.groovy").getFile())
@@ -39,15 +40,22 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
             case "WLS" :
             case "WEBLOGIC" :
                 def mp = config.messagePlatform
-                Map wls = config.messagePlatform.weglogic
-                String providerUrl = "${wls.protocol}://${wls.hostname}:${wls.port}"
+                Map wls = config.messagePlatform.weblogic
+                if (wls)
+                    providerUrl = "${wls?.protocol ?: ''}://${wls?.hostname ?: 'localhost'}:${wls?.port ?: '7001'}"
+                else
+                    providerUrl = "invalid"
                 String defaultProviderUrl = wls.defaultProviderUrl
-                if (!env.getProperty("senderSecurityCredentials")) {
-                    wls.put('senderSecurityCredentials', "testSender")
-                }
-                if (!env.getProperty("receiverSecurityCredentials")) {
-                    wls.put ('receiverSecurityCredentials', "testReceiver")
-                }
+                senderCredentials = env.getProperty("MVA_SENDER_SECURITY_CREDENTIALS")
+                receiverCredentials = env.getProperty("MVA_RECEIVER_SECURITY_CREDENTIALS")
+                if (!senderCredentials) {
+                    wls.put('mvaSenderSecurityCredentials', "testSender1")
+                } else
+                    wls.put ('mvaSenderSecurityCredentials', senderCredentials)
+                if (!receiverCredentials) {
+                    wls.put ('mvaReceiverSecurityCredentials', "testReceiver1")
+                } else
+                    wls.put ('mvaReceiverSecurityCredentials', receiverCredentials)
                 return new WlsJmsMessagePlatform(wls)
             case "MQ" :
             case "ACTIVEMQ" :

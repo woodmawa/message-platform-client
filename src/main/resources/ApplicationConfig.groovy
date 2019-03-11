@@ -5,8 +5,8 @@ messagePlatform {
         hostname = 'localhost'
         port = '7001'
         defaultProviderUrl = "t3://localhost:7001"
-        senderSecurityPrincipal = 'cramer'
-        receiverSecurityPrincipal = 'cortex'
+        mvaSenderSecurityPrincipal = 'cramer'
+        mvaReceiverSecurityPrincipal = 'cortex'
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
     }
 
