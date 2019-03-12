@@ -24,9 +24,13 @@ enum JmsConnectionType {
 }
 
 /**
- * weblogic jms platform client factor
+ * weblogic jms platform client factor, inherits base capability via traits
+ * for common reusable message pattern capabilities
  */
-class WlsJmsMessagePlatform implements MessageSystemClient {
+class WlsJmsMessagePlatform implements MessageSystemClient,
+        PublisherTrait, SenderTrait,
+        SubscriberTrait, ReceiverTrait
+{
 
     private ThreadLocal<Environment> wlsenv
     private ThreadLocal<Context> ctx
@@ -124,6 +128,15 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         return QTF_NAME
     }
 
+    /**
+     * use queue connection factor to create QueueConnection object using the sender or receiver
+     * security principal and credentials.  queue connection created is also stored in a threadlocal
+     * local variable for sender or receiver
+     *
+     *
+     * @param type - Enum of either Sender or Receiver determines which security principal/credential are used
+     * @return new QueueConnection - used to create queue related objects
+     */
     QueueConnection createQueueConnection (JmsConnectionType type) {
         QueueConnection qc
         if (!qcf) {
@@ -153,11 +166,20 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         qc
     }
 
+    /**
+     * creates a new QueueSession from appropriate QueueConnection for either a sender or a receiver.  creates
+     * auto acknowledge sessions by default.   Stores session in thread local variable
+     *
+     * @param type - Enum of type Sender or Receiver
+     * @return
+     */
+
     QueueSession createQueueSession (JmsConnectionType type) {
         // create QueueSession
         QueueSession qs
         try {
             // set thread local session
+            //todo support other session types when required
             if (type == JmsConnectionType.Sender) {
                 senderQsession.set(qs = senderqc.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
             } else if (type == JmsConnectionType.Receiver) {
@@ -184,7 +206,103 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         return queue
     }
 
+    /**
+     * resource handler for either sending or receiving
+     * at end will ensure that the seession and connections have been closed
+     *
+     *
+     * @param queue
+     * @param closure
+     * @return
+     */
+    def withQueue (JmsConnectionType type, Queue queue, Closure closure ) {
+        Closure clos = closure?.clone()
+        clos.delegate = this  //set the closure delegate to this platform implementation instance
 
+        QueueConnection qc
+        QueueSession qs
+        if (type == JmsConnectionType.Sender) {
+            qc = senderqc.get() ?: createQueueConnection(JmsConnectionType.Sender)
+            qs = senderQsession.get() ?: createQueueSession(JmsConnectionType.Sender)
+        } else  {
+            qc = receiverqc.get() ?: createQueueConnection(JmsConnectionType.Receiver)
+            qs = receiverQsession.get() ?: createQueueSession(JmsConnectionType.Receiver)
+        }
+        qc.start()
+
+            //call users closure with queue session
+            def result = clos(qs)
+
+        qs.close()
+        qc.close()
+
+        //reset the thread local variables
+        if (type == JmsConnectionType.Sender) {
+            senderqc.set(null)
+            senderQsession.set(null)
+        } else  {
+            receiverqc.set(null)
+            receiverQsession.set(null)
+        }
+        result
+    }
+
+    QueueSender createQueueSender (Queue q) {
+        // create QueueSender
+        QueueSender sender
+        if (!senderQsession.get())
+            senderQsession.set (createQueueSession(JmsConnectionType.Sender))
+
+        try {
+            qsender.set( sender = senderQsession.get().createSender (q))
+        }
+        catch (JMSException jmse) {
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+        sender
+    }
+
+    @Override
+    void send(Message message) {
+        // send message - use the default qsender from thread local
+        try {
+            qsender.get().send(message)
+        }
+        catch (JMSException jmse) {
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+
+    }
+
+    @Override
+    void send(QueueSender qsender, Message message) {
+        // send message
+        try {
+            qsender.send(message)
+        }
+        catch (JMSException jmse) {
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+    }
+
+    @Override
+    void send (String text) {
+
+        Message message
+        try {
+            message = senderQsession.get().createTextMessage()
+            message.setText (text)
+        }
+        catch (JMSException jmse) {
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+        send (message)
+
+    }
 
     QueueReceiver createQueueReceiver (Queue q) {
         // create QueueReceiver
@@ -199,75 +317,13 @@ class WlsJmsMessagePlatform implements MessageSystemClient {
         receiver
     }
 
-    /**
-     * resource handler
-     * @param queue
-     * @param closure
-     * @return
-     */
-    def withQueue (Queue queue, Closure closure ) {
-        Closure clos = closure?.clone()
-        clos.delegate = this  //set the closure delegate to this platform implementation instance
-        QueueConnection qc = qc.get() ?: createQueueConnection()
-        qc.start()
-        QueueSession qs = qsession.get() ?: createQueueSession()
-            clos(qs)  //call users closure
-        qs.close()
-        qc.close()
-
-    }
-
-    QueueSender createQueueSender (Queue q) {
-        // create QueueSender
-        QueueSender sender
-        if (!qsession.get())
-            qsession.set (createQueueSession())
-        try {
-            qsendr.set( sender = qsession.get().createSender (q))
-        }
-        catch (JMSException jmse) {
-            jmse.printStackTrace(System.err)
-            System.exit(0)
-        }
-        sender
-    }
-
-    @Override
-    void send(Message message) {
-        // send message
-        try {
-            qsendr.get().send(message)
-        }
-        catch (JMSException jmse) {
-            jmse.printStackTrace(System.err)
-            System.exit(0)
-        }
-
-    }
-
-    @Override
-    void send (String text) {
-
-        Message message
-        try {
-            message = qsession.get().createTextMessage()
-            message.setText (text)
-        }
-        catch (JMSException jmse) {
-            jmse.printStackTrace(System.err)
-            System.exit(0)
-        }
-        send (message)
-
-    }
-
 
     @Override
     Message receive() {
-        if (!qrecvr.get()) {
-            qrecvr.set (createQueueReceiver(qc.get()))
+        if (!qreceiver.get()) {
+            qreceiver.set (createQueueReceiver(qc.get()))
         }
-        return receive (qrecvr.get())
+        return receive (qreceiver.get())
     }
 
     @Override
