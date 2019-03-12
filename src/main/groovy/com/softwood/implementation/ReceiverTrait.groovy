@@ -188,6 +188,7 @@ trait ReceiverTrait {
         String text = txtMess.getText()
     }
 
+    /* test hack
     String readQ () {
         println "got queue connection factory $qcf"
         QueueConnection qc= createReceiverQueueConnection()
@@ -200,23 +201,7 @@ trait ReceiverTrait {
         def mess = receive (recvr)
         println "read : " + mess.getText()
     }
-
-    //this hack works
-    String readQ2 () {
-        QueueConnection qc = qcf.createQueueConnection()
-        println "Got QueueConnection $qc"
-        QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE)
-        println "Got QueueSession $qs"
-        Queue q = getQueue (this.operatingEnv.get('orderQueue'))
-        println "got q ${q.queueName}"
-        QueueReceiver qr = qs.createReceiver(q)
-        println "Got QueueReceiver $qr"
-        qc.start()
-        println "start connection $qc"
-        String text =  qr.receive(1L)?.getText() ?: "timed out"
-        println "read [${text}]"
-
-    }
+    */
 
     Message receive(QueueReceiver qrecvr) {
         def text
