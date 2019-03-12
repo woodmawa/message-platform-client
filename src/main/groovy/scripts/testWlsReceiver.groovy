@@ -10,8 +10,4 @@ def result = mclient.receiveText ()
 
 println "read [$result] from queue"
 
-
-println "\n try again - readQ \n"
-
-mclient.readQ ()
 mclient.tidyUpSender()
