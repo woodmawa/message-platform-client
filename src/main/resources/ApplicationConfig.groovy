@@ -7,6 +7,9 @@ messagePlatform {
         defaultProviderUrl = "t3://localhost:7001"
         mvaSenderSecurityPrincipal = 'cramer'
         mvaReceiverSecurityPrincipal = 'cortex'
+        orderQueue = 'jms/workOrderQueue'
+        orderResultsQueue = 'jms/workOrderResultsQueue'
+        errorQueue = 'jms/errorQueue'
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
     }
 
