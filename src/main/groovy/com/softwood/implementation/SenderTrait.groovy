@@ -47,11 +47,14 @@ trait SenderTrait {
         String senderPrinciple
         String senderCredentials
         try {
-            //set thread local connection {
+            if (!senderQconnection.get()) {
+                //set thread local connection {
 
-            senderPrinciple = env.get('mvaSenderSecurityPrincipal')
-            senderCredentials = env.get('mvaSenderSecurityCredentials')
-            qc = qcf.createQueueConnection(senderPrinciple, senderCredentials)
+                senderPrinciple = env.get('mvaSenderSecurityPrincipal')
+                senderCredentials = env.get('mvaSenderSecurityCredentials')
+                qc = qcf.createQueueConnection(senderPrinciple, senderCredentials)
+            } else
+                qc = senderQconnection.get()
 
         }
         catch (JMSException jmse) {
@@ -83,8 +86,12 @@ trait SenderTrait {
                 } else
                     senderQconnection.set (qc)
             }
-            // set thread local session
-            senderQsession.set(qs = senderQconnection.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
+
+            if (!senderQsession.get()) {
+                // set thread local session
+                senderQsession.set(qs = senderQconnection.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
+            } else
+                qs = senderQsession.get()
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)
@@ -100,7 +107,10 @@ trait SenderTrait {
             senderQsession.set (createSenderQueueSession())
 
         try {
-            qSender.set( sender = senderQsession.get().createSender (q))
+            if (!qSender.get()) {
+                qSender.set(sender = senderQsession.get().createSender(q))
+            } else
+                sender = qSender.get()
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)
