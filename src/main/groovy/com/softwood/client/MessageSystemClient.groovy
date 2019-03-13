@@ -20,8 +20,14 @@ import javax.jms.TopicSubscriber
  */
 interface MessageSystemClient {
 
-    //todo later flexibilty by providing config map /headers to refine behaviour
+    //todo later flexibility by providing config map /headers to refine behaviour
     //todo get unmanaged JMS sessions - users do as they please with these and responsible for own tidy up
+
+    //lookups
+    Queue getQueue (String queueName)
+    Topic getTopic (String topicName)
+    def getPlatformEnvironmentProperty (String propertyName)
+    Map getPlatformEnvironment ()
 
     //Q senders
     void sendText (String stringMessage)

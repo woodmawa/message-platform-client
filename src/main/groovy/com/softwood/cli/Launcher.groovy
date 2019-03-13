@@ -3,18 +3,20 @@ package com.softwood.cli
 import com.softwood.client.AbstractMessagePlatformFactory
 import com.softwood.client.MessagePlatformFactoryProducer
 import com.softwood.client.MessageSystemClient
+import com.softwood.implementation.JmsConnectionType
 
 class Launcher {
+
+    static MessageSystemClient mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
 
     static void main (args){
 
         //get factory from the factoryProducer and get messagePlatform client instance from it
-        MessageSystemClient mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
 
         def action, message
         if (args.size() == 0) {
             action = 'send'
-            mclient.send("'empty': test message")
+
             System.exit(0)
         }
         else {
@@ -37,4 +39,29 @@ class Launcher {
                 break
         }
     }
+
+    static def send (String text) {
+        mclient.sendText("hello world")
+        mclient.tidyUpSender()
+    }
+
+    static def withQueue (Closure work) {
+        def q = mclient.getQueue ('jsm/workOrderQueue')
+        mclient.withQueue (JmsConnectionType.Sender, q, work)
+     }
+
+    static def receive () {
+        mclient.receiverStart()
+        def result = mclient.receiveText ()
+
+        println "read [$result] from queue"
+    }
+
+    static def withTopic (Closure script) {
+        def q = mclient.getTopic ('jms/workOrderTopic')
+        mclient.withQueue (JmsConnectionType.Sender, q, work)
+    }
+
+
+
 }

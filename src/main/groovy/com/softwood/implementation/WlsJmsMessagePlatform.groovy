@@ -71,7 +71,13 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
 
     //called by jms traits to get required details for platform
     Map getPlatformEnvironment () {
-        operatingEnv
+        final Map env = operatingEnv.asImmutable()
+        env
+    }
+
+    //called by jms traits to get required details for platform
+    def getPlatformEnvironmentProperty (String envVariable) {
+        operatingEnv["${envVariable.toString()}"]
     }
 
     void setQueueConnectionfactory (String connectionFactoryName ) {
