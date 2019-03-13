@@ -9,6 +9,7 @@ messagePlatform {
         mvaReceiverSecurityPrincipal = 'cortex'
         orderQueue = 'jms/workOrderQueue'
         orderResultsQueue = 'jms/workOrderResultsQueue'
+        defaultSubscriptionReceiveTimeout = 1L
         errorQueue = 'jms/errorQueue'
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
     }

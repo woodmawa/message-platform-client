@@ -12,10 +12,10 @@ import javax.naming.NamingException
 
 trait SenderTrait {
 
-    //make sender queue connection public in the implementing class - expect impl class to set this
+    // make sender queue connection public in the implementing class - expect impl class to set this
     ThreadLocal<QueueConnection> senderQconnection = new ThreadLocal<>()
+    ThreadLocal<QueueSession> senderQsession = new ThreadLocal<>()
 
-    private ThreadLocal<QueueSession> senderQsession = new ThreadLocal<>()
     private  ThreadLocal<QueueSender> qSender = new ThreadLocal<>()
 
     /**

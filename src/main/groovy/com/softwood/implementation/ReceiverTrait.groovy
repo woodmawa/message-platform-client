@@ -10,10 +10,7 @@ import javax.jms.QueueSender
 import javax.jms.QueueSession
 import javax.jms.Session
 import javax.jms.TextMessage
-import javax.jms.TopicConnection
-import javax.jms.TopicPublisher
-import javax.jms.TopicSession
-import javax.jms.TopicSubscriber
+
 import javax.naming.NamingException
 
 trait ReceiverTrait {

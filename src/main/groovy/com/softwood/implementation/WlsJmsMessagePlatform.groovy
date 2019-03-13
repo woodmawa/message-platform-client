@@ -11,7 +11,9 @@ import java.security.InvalidParameterException
 
 enum JmsConnectionType {
     Sender,
-    Receiver
+    Receiver,
+    Publisher,
+    Subscriber
 }
 
 /**
@@ -54,8 +56,6 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
 
         Environment wlsenv =  new Environment ()
         wlsenv.setProviderUrl (providerUrl)
-        //wlsenv.set (new Environment ())
-        //wlsenv.get().setProviderUrl (providerUrl)
         try {
             ctx.set (wlsenv.getInitialContext())//new InitialContext(properties)
         } catch (NamingException ne) {
@@ -107,6 +107,25 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
     }
 
     /**
+     * parent service to lookup a topic name from the message naming context
+     *
+     * @param topicName
+     * @return topic
+     */
+    Topic getTopic (String topicName) {
+        // lookup Queue
+        Topic topic
+        try {
+            topic = (Topic) ctx.get().lookup(topicName)
+        }
+        catch (NamingException ne) {
+            ne.printStackTrace(System.err)
+            System.exit(0)
+        }
+        return topic
+    }
+
+    /**
      * resource handler for either sending or receiving
      * at end will ensure that the seession and connections have been closed
      *
@@ -137,12 +156,48 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         //reset the thread local variables
         if (type == JmsConnectionType.Sender)
             tidyUpSender()
-        else
+        else if (type == JmsConnectionType.Receiver)
             tidyUpReceiver()
 
         result
     }
 
+    /**
+     * resource handler for either publishing or subscribing
+     * at end will ensure that the seession and connections have been closed
+     *
+     *
+     * @param topic
+     * @param closure
+     * @return
+     */
+    def withTopic (JmsConnectionType type, Topic topic, Closure closure ) {
+        Closure clos = closure?.clone()
+        clos.delegate = this  //set the closure delegate to this platform implementation instance
+
+        TopicConnection tc
+        TopicSession ts
+        if (type == JmsConnectionType.Publisher) {
+            tc = publisherTconnection.get() ?: createPublisherTopicConnection()
+            ts = publisherTsession.get() ?: createPublisherSession()
+        } else if (type == JmsConnectionType.Subscriber) {
+            tc = subscriberTconnection.get() ?: createPublisherTopicConnection()
+            ts = subscriberTsession.get() ?: createSubscriberSession()
+            tc.start()
+
+        }
+
+        //call users closure with queue session
+        def result = clos(qs)
+
+        //reset the thread local variables
+        if (type == JmsConnectionType.Publisher)
+            tidyUpPublisher()
+        else if (type == JmsConnectionType.Subscriber)
+            tidyUpSubscriber()
+
+        result
+    }
 
     @Override
     Message browse(Queue queue) {
