@@ -2,30 +2,65 @@ package com.softwood.client
 
 import com.softwood.implementation.JmsConnectionType
 
+import javax.jms.MessageListener
 import javax.jms.QueueConnection
 import javax.jms.QueueReceiver
 import javax.jms.Message
 import javax.jms.Queue
 import javax.jms.QueueSender
 import javax.jms.QueueSession
+import javax.jms.Topic
+import javax.jms.TopicPublisher
+import javax.jms.TopicSubscriber
 
+/**
+ * this is an abstraction of messaging platform with simplified options for basic use patterns
+ *
+ *
+ */
 interface MessageSystemClient {
 
+    //todo later flexibilty by providing config map /headers to refine behaviour
+    //todo get unmanaged JMS sessions - users do as they please with these and responsible for own tidy up
+
+    //Q senders
     void sendText (String stringMessage)
     void send (Message message)
     void send (QueueSender sender, Message message)
 
-    void receiverStart()
-    void receiverStop()
+    //Q receivers
     String receiveText ()
     Message receive (QueueReceiver qrecvr)
     Message receive (QueueReceiver qrecvr, Long timeout)
+    void receiverStart()
+    void receiverStop()
+
+    //Topic publishers
+    void publishText (String stringMessage)
+    void publish (Message message)
+    void publish (TopicPublisher publisher, Message message)
+
+    //Topic subscribers
+    String subscriptionReceiveText ()
+    Message subscriptionReceive (TopicSubscriber tSubscriber)
+    Message subscriptionReceive (TopicSubscriber tSubscriber, Long timeout)
+    void setAsyncMessageListener (MessageListener listener)
+    void setAsyncMessageListener (MessageListener listener, TopicSubscriber tSubscriber)
+    void subscribersStart()
+    void subscribersStop()
+
+    //Q browse
     Message browse (String queueName)
     Message browse (Queue queue)
-    def withQueue (JmsConnectionType type, Queue queue, Closure closure)
 
+    // excecute users closure asa resource with auto cleanup at end
+    def withQueue (JmsConnectionType type, Queue queue, Closure closure)
+    def withTopic (JmsConnectionType type, Topic topic, Closure closure)
+
+    //manual tidyup options
     def tidyUpSender ()
     def tidyUpReceiver()
+    def tidyUpPublisher()
+    def tidyUpSubscriber()
 
-    def onMessage ()
 }
