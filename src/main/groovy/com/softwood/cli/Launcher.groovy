@@ -17,7 +17,7 @@ class Launcher {
 
         //get factory from the factoryProducer and get messagePlatform client instance from it
 
-        def action, message
+        String action, message
         if (args.size() == 0) {
             action = 'send'
 
@@ -29,7 +29,22 @@ class Launcher {
                 message = args[1] ?: "default"
         }
 
-        switch (action[0].toLowerCase()) {
+        String selector
+        if (action.substring(0,1) == '--') {  //long form
+            def arg = action.substring(2)
+            if (arg.contains ('sen')) {
+                selector = 's'
+            } else if (arg.contains ('rec')) {
+                selector = 'r'
+            } else if (arg.contains ('ex')) {
+                selector = 'e'
+            }
+        } else if (action[0] == '-') {  //short form
+            selector = action[1]  //take next letter
+
+        } else
+
+            switch (selector.toLowerCase()) {
             case 's':
                 //for send action
                 send(message)
@@ -68,8 +83,8 @@ class Launcher {
         mclient.receiverStart()
         def result = mclient.receiveText ()
 
-        println "read [$result] from queue"
         mclient.tidyUpReceiver()
+        result
     }
 
     static def withPublisherTopic (Closure work) {
