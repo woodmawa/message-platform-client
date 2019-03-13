@@ -5,6 +5,10 @@ import com.softwood.client.MessagePlatformFactoryProducer
 import com.softwood.client.MessageSystemClient
 import com.softwood.implementation.JmsConnectionType
 
+/**
+ * simple command line driver for fat jar functions
+ * cortex can call jar with params to execute single show action
+ */
 class Launcher {
 
     static MessageSystemClient mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
@@ -27,15 +31,20 @@ class Launcher {
 
         switch (action[0].toLowerCase()) {
             case 's':
-                mclient.send(message)
+                //for send action
+                send(message)
                 break
             case 'r':
-            case 'c':
-                message = mclient.receive()
+                //for receive or collect
+                message = receive()
                 println "read message from queue : [$message]"
                 break
+            case 'e':
+                //for execute a script closure
+                //todo - read file from command line, generate a closure from it and execute with withQueue action
+
             default :
-                println "args usage: 'send [message]' or 'receive'"
+                println "args usage: '-s --send [message]' or '-r --receive' or -e --execute fileScript"
                 break
         }
     }
@@ -45,23 +54,32 @@ class Launcher {
         mclient.tidyUpSender()
     }
 
-    static def withQueue (Closure work) {
-        def q = mclient.getQueue ('jsm/workOrderQueue')
+    static def withSenderQueue (Closure work) {
+        def q = mclient.getQueue (mclient.getPlatformEnvironmentProperty('orderQueue'))
         mclient.withQueue (JmsConnectionType.Sender, q, work)
      }
+
+    static def withReceiverQueue (Closure work) {
+        def q = mclient.getQueue (mclient.getPlatformEnvironmentProperty('orderQueue'))
+        mclient.withQueue (JmsConnectionType.Receiver, q, work)
+    }
 
     static def receive () {
         mclient.receiverStart()
         def result = mclient.receiveText ()
 
         println "read [$result] from queue"
+        mclient.tidyUpReceiver()
     }
 
-    static def withTopic (Closure script) {
-        def q = mclient.getTopic ('jms/workOrderTopic')
-        mclient.withQueue (JmsConnectionType.Sender, q, work)
+    static def withPublisherTopic (Closure work) {
+        def t = mclient.getTopic (mclient.getPlatformEnvironmentProperty('orderTopic'))
+        mclient.withQueue (JmsConnectionType.Publisher, t, work)
     }
 
-
+    static def withSubscriberTopic (Closure work) {
+        def t = mclient.getTopic (mclient.getPlatformEnvironmentProperty('orderTopic'))
+        mclient.withQueue (JmsConnectionType.Subscriber, t, work)
+    }
 
 }
