@@ -219,10 +219,6 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         return null
     }
 
-    @Override
-    def onMessage() {
-        return null
-    }
 
 
 }
