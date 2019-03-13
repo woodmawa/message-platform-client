@@ -30,7 +30,7 @@ class Launcher {
         }
 
         String selector
-        if (action.substring(0,1) == '--') {  //long form
+        if (action.substring(0,1) == '--') {  //long  form
             def arg = action.substring(2)
             if (arg.contains ('sen')) {
                 selector = 's'
