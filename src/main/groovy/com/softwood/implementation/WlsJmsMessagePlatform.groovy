@@ -19,14 +19,26 @@ enum JmsConnectionType {
 /**
  * weblogic jms platform client factor, inherits base capability via traits
  * for common reusable message pattern capabilities
+ *
+ * attempted to be concurrent aware using thread local pattern
+ *
+ * usage : create one or more instances for each controlled group of senders/receivers or
+ * publisher/subscribers
+ *
+ * can be same system - or remote ends using the Queue/topic as the integration point
+ *
+ * not using durable processes yet - so system failure would lose work
+ *
  */
+//Todo more work for durable subscriptions and secure SSL connections
+
 class WlsJmsMessagePlatform implements MessageSystemClient,
         PublisherTrait, SenderTrait,
         SubscriberTrait, ReceiverTrait
 {
 
     //private ThreadLocal<Environment> wlsenv = new ThreadLocal<>()
-    private ThreadLocal<Context> ctx= new ThreadLocal<>()
+    private ThreadLocal<Context> ctx= new ThreadLocal<>()  //heavy weight object - may want to make static at some point 
     private Map operatingEnv
     private String QCF_NAME = "jms/queueConnectionFactory"
     private String QTF_NAME = "jms/topicConnectionFactory"
@@ -34,14 +46,6 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
     private String DEFAULT_TOPIC = 'jms/workOrderQueue'
     private QueueConnectionFactory qcf = null
     private TopicConnectionFactory qtf = null
-    private ThreadLocal<TopicConnection> sendertc = new ThreadLocal<>()
-    private ThreadLocal<TopicConnection> receivertc = new ThreadLocal<>()
-    private  ThreadLocal<TopicSession> publisherTsession = new ThreadLocal<>()
-    private  ThreadLocal<TopicSession> subscriberTsession = new ThreadLocal<>()
-    private  ThreadLocal<TopicPublisher> tpublisher = new ThreadLocal<>()
-    private  ThreadLocal<TopicSubscriber> tsubscriber = new ThreadLocal<>()
-
-
 
     WlsJmsMessagePlatform (final Map env) {
 

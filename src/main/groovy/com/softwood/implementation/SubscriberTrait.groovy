@@ -17,6 +17,18 @@ import javax.jms.TopicSession
 import javax.jms.TopicSubscriber
 import javax.naming.NamingException
 
+/**
+ *
+ * reusable trait for basic controlled JMS features that based on feature groups
+ *
+ * this is the constrained JMS subscriber feature set
+ *
+ * relies on its parent implementation class, for environment variables, and queue/topic lookups
+ *
+ * @Author Will Woodman
+ * @Copyright Softwood Consulting ltd, 2019
+ *
+ */
 trait SubscriberTrait {
 
     private ThreadLocal<TopicConnection> subscriberTconnection = new ThreadLocal<>()

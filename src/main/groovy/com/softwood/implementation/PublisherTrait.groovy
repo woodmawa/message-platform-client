@@ -15,6 +15,19 @@ import javax.jms.TopicPublisher
 import javax.jms.TopicSession
 import javax.naming.NamingException
 
+
+/**
+ *
+ * reusable trait for basic controlled JMS features that based on feature groups
+ *
+ * this is the constrained JMS publisher feature set
+ *
+ * relies on its parent implementation class, for environment variables, and queue/topic lookups
+ *
+ * @Author Will Woodman
+ * @Copyright Softwood Consulting ltd, 2019
+ *
+ */
 trait PublisherTrait {
 
     //make sender queue connection public in the implementing class - expect impl class to set this
