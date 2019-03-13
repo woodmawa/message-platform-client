@@ -38,7 +38,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
 {
 
     //private ThreadLocal<Environment> wlsenv = new ThreadLocal<>()
-    private ThreadLocal<Context> ctx= new ThreadLocal<>()  //heavy weight object - may want to make static at some point 
+    private ThreadLocal<Context> ctx= new ThreadLocal<>()  //heavy weight object - may want to make static at some point
     private Map operatingEnv
     private String QCF_NAME = "jms/queueConnectionFactory"
     private String QTF_NAME = "jms/topicConnectionFactory"
@@ -186,12 +186,12 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
             ts = publisherTsession.get() ?: createPublisherSession()
         } else if (type == JmsConnectionType.Subscriber) {
             tc = subscriberTconnection.get() ?: createPublisherTopicConnection()
-            ts = subscriberTsession.get() ?: createSubscriberSession()
+            ts = subscriberTsession.get() ?: createSubscriberTopicSession()
             tc.start()
 
         }
 
-        //call users closure with queue session
+        //call users closure with topic session
         def result = clos(qs)
 
         //reset the thread local variables
