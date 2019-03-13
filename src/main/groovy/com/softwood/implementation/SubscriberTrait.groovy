@@ -285,9 +285,9 @@ trait SubscriberTrait {
      */
     void setAsyncMessageListener (MessageListener listener, TopicSubscriber tSubs = null) {
 
-        TopicSubscriber = subscriber
-        if (tSubscriber == null){
-
+        TopicSubscriber subscriber
+        if (tSubs ){
+            subscriber = tSubs
         } else
             subscriber = tSubscriber.get()
 
