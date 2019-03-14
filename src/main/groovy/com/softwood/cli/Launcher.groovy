@@ -37,10 +37,10 @@ class Launcher {
         @Option (shortName = 'r', longName = 'receive',  description = 'read message from jms Queue')
         boolean receive
 
-        @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS Sender session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
         File sscript
 
-        @Option (shortName = 'er', longName = 'execute-receiver', description = 'run script file as closure, will be passed JMS session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        @Option (shortName = 'er', longName = 'execute-receiver', description = 'run script file as closure, will be passed JMS Receiver session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
         File rscript
 
         @Unparsed (description = 'positional parameters')
