@@ -37,8 +37,11 @@ class Launcher {
         @Option (shortName = 'r', longName = 'receive',  description = 'read message from jms Queue')
         boolean receive
 
-        @Option (shortName = 'e', longName = 'execute', description = 'run script file as closure, will be passed JMS session as param')
-        File script
+        @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        File sscript
+
+        @Option (shortName = 'er', longName = 'execute-receiver', description = 'run script file as closure, will be passed JMS session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        File rscript
 
         @Unparsed (description = 'positional parameters')
         List remaining
@@ -85,14 +88,14 @@ class Launcher {
             println "read message : $message, passsed Q: $options.receive"
         }
 
-        if (options.script) {
+        if (options.sscript) {
 
             //try and find script relative to fatjar directory.  In fatjar this  shows the directory the fatjar was called from - else try backup script source below
             String base = Paths.get("").toAbsolutePath().toString();
 
             String userdir = System.getProperty("user.dir")
 
-            String script = options.script
+            String script = options.sscript
             String sourceName = "$base${File.separatorChar}$script"
             String backupScriptDir = mclient.getPlatformEnvironmentProperty('defaultScriptDirectory') ?: "~"
             // substitute the ~ for the users actual home path
@@ -113,10 +116,44 @@ class Launcher {
             //todo source the file content then use that to build a closure
             GroovyShell shell = new GroovyShell()
             def clos = shell.evaluate("$text")
-            def result = clos("hi")
-            println result
+            /*def result = clos("hi")
+            println result*/
 
-            //todo when ready invoke:  result = withPublisherTopic (clos)
+            def result = withSenderQueue (clos)
+        }
+
+        if (options.rscript) {
+
+            //try and find script relative to fatjar directory.  In fatjar this  shows the directory the fatjar was called from - else try backup script source below
+            String base = Paths.get("").toAbsolutePath().toString();
+
+            String userdir = System.getProperty("user.dir")
+
+            String script = options.rscript
+            String sourceName = "$base${File.separatorChar}$script"
+            String backupScriptDir = mclient.getPlatformEnvironmentProperty('defaultScriptDirectory') ?: "~"
+            // substitute the ~ for the users actual home path
+            backupScriptDir = backupScriptDir.replaceFirst("^~", Matcher.quoteReplacement(System.getProperty("user.home")))
+            String defaultSourceName = "$backupScriptDir${File.separatorChar}$script"
+            File source = new File (sourceName.toString())
+            File backupSource = new File (defaultSourceName.toString())
+            def text = ""
+            if (source.exists()) {
+                text = "{it-> ${source.text}}"
+            } else if (backupSource.exists()) {
+                println "using backup script source ${backupSource.canonicalPath}"
+                text = "{it-> ${backupSource.text}}"
+            } else {
+                throw new FileNotFoundException("cant find script file ${source.canonicalPath} passed as argument to Execute action")
+            }
+
+            //todo source the file content then use that to build a closure
+            GroovyShell shell = new GroovyShell()
+            def clos = shell.evaluate("$text")
+            /*def result = clos("hi")
+            println result*/
+
+            def result = withReceiverQueue (clos)
         }
 
     }
