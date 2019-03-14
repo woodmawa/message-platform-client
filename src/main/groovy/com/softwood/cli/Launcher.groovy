@@ -4,6 +4,10 @@ import com.softwood.client.AbstractMessagePlatformFactory
 import com.softwood.client.MessagePlatformFactoryProducer
 import com.softwood.client.MessageSystemClient
 import com.softwood.implementation.JmsConnectionType
+import groovy.cli.Option
+import groovy.cli.Unparsed
+import groovy.cli.picocli.CliBuilder
+import picocli.CommandLine
 
 /**
  * simple command line driver for fat jar functions
@@ -11,56 +15,59 @@ import com.softwood.implementation.JmsConnectionType
  */
 class Launcher {
 
+    static class CliOptions {
+        @Option (shortName = 's', longName ='send', description = 'send message to jms Queue')
+        String sendText
+
+        //@Option (paramLabel='Text', description = 'text to send to queue ')
+        //String text
+
+        @Option (shortName = 'r', longName = 'receive', description = 'read message from jms Queue')
+        boolean receive
+
+        @Option (shortName = 'e', longName = 'execute', description = 'run script file as closure, will be passed JMS session as param')
+        File script
+
+        @Unparsed (description = 'positional parameters')
+        List remaining
+    }
+
     static MessageSystemClient mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
 
     static void main (args){
 
-        //get factory from the factoryProducer and get messagePlatform client instance from it
-
-        String action, message
-        if (args.size() == 0) {
-            action = 'send'
-
-            System.exit(0)
-        }
-        else {
-            action = args[0]
-            if (args.size() >= 2)
-                message = args[1] ?: "default"
+        /*def cli = new CliBuilder(name: 'jmsClient',
+                usage:'java -jar message-platform-client [<options>]',
+                header: 'Options:',
+                footer: "Softwood Consulting Ltd")
+        cli.width = 80 //default is 74
+        cli.with {
+            s (longOpt: 'send', type: String, 'send message to jms Queue')
+            r (longOpt: 'receive', type: Boolean, 'read a message from jms Queue')
+            e (longOpt: 'execute', type: File, 'groovy script file to be called as a closure, and passed JMS Session ')
+            //D (args:2, valueSeperator: '=', argName: 'property=value', 'Use value for givenm property')
         }
 
-        String selector
-        if (action.substring(0,1) == '--') {  //long  form
-            def arg = action.substring(2)
-            if (arg.contains ('sen')) {
-                selector = 's'
-            } else if (arg.contains ('rec')) {
-                selector = 'r'
-            } else if (arg.contains ('ex')) {
-                selector = 'e'
-            }
-        } else if (action[0] == '-') {  //short form
-            selector = action[1]  //take next letter
+        def options = cli.parse(args)
+        */
 
-        } else
+        CliOptions options = new CliOptions()
+        def cli = new CliBuilder (usage: 'java -jar file [<Options>]')
+        cli.parseFromInstance (options, args)
 
-            switch (selector.toLowerCase()) {
-            case 's':
-                //for send action
-                send(message)
-                break
-            case 'r':
-                //for receive or collect
-                message = receive()
-                println "read message from queue : [$message]"
-                break
-            case 'e':
-                //for execute a script closure
-                //todo - read file from command line, generate a closure from it and execute with withQueue action
+        def message
 
-            default :
-                println "args usage: '-s --send [message]' or '-r --receive' or -e --execute fileScript"
-                break
+        if ((message = options.send)) {
+            send(message)
+
+        }
+        if (options.receive) {
+            message = receive()
+            println "read message : $message"
+        }
+        if (options.execute) {
+            //todo - read file from command line, generate a closure from it and execute with withQueue action
+
         }
     }
 
