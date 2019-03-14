@@ -94,7 +94,7 @@ class Launcher {
                 Path crpath = Paths.get("")
                 String s = crpath.toAbsolutePath().toString();
                 println "user dir  : " + System.getProperty("user.dir")
-                //Path path2 = FileSystems.getPath("").toAbsolutePath()
+                //Path path2 = FileSystems.getPath(""). toAbsolutePath()
 
                 println "def path " + path.toString() + " cur rel path: $s"
 
