@@ -86,8 +86,21 @@ class Launcher {
 
         if (options.script) {
 
+            String base = Paths.get("").toAbsolutePath().toString();  //works in fat jar and shows directory jar called from
+            // println "user dir  : " + System.getProperty("user.dir")
+            //String invokedFromDirectory = System.getProperty("user.dir")
+
+            String script = options.script
+            String sourceName = "$base${File.separatorChar}$script"
+            File source = new File (sourceName.toString())
+            def text = ""
+            if (source.exists()) {
+                text = "{it-> ${source.text}}"
+            } else {
+                throw new FileNotFoundException("cant find script file ${source.canonicalPath} passed as argument to Execute action")
+            }
+
             //todo source the file content then use that to build a closure
-            def text = "{it -> println it;it}"
             GroovyShell shell = new GroovyShell()
             def clos = shell.evaluate("$text")
             def result = clos("hi")
