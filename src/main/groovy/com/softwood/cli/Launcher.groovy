@@ -13,6 +13,7 @@ import picocli.CommandLine
  * simple command line driver for fat jar functions
  * cortex can call jar with params to execute single show action
  */
+
 class Launcher {
 
     static class CliOptions {
@@ -36,6 +37,10 @@ class Launcher {
 
     static void main (args){
 
+
+
+        //println "howdi "
+        //System.exit(-1)
         /*def cli = new CliBuilder(name: 'jmsClient',
                 usage:'java -jar message-platform-client [<options>]',
                 header: 'Options:',
@@ -48,8 +53,8 @@ class Launcher {
             //D (args:2, valueSeperator: '=', argName: 'property=value', 'Use value for givenm property')
         }
 
-        def options = cli.parse(args)
-        */
+        def options = cli.parse(args)*/
+
 
         CliOptions options = new CliOptions()
         def cli = new CliBuilder (usage: 'java -jar file [<Options>]')
@@ -57,7 +62,7 @@ class Launcher {
 
         def message
 
-        if ((message = options.send)) {
+        if ((message = options.sendText)) {
             send(message)
 
         }
@@ -65,11 +70,13 @@ class Launcher {
             message = receive()
             println "read message : $message"
         }
-        if (options.execute) {
+        /*if (options.execute) {
             //todo - read file from command line, generate a closure from it and execute with withQueue action
 
-        }
+        }*/
+
     }
+
 
     static def send (String text) {
         mclient.sendText("hello world")
