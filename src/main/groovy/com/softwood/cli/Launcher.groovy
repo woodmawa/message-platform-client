@@ -11,6 +11,10 @@ import groovy.cli.Unparsed
 import groovy.cli.picocli.CliBuilder
 import picocli.CommandLine
 
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.Paths
+
 /**
  * simple command line driver for fat jar functions
  * cortex can call jar with params to execute single show action
@@ -19,13 +23,17 @@ import picocli.CommandLine
 class Launcher {
 
     static class CliOptions {
+
+        @Option (shortName = 'h', longName ='help', description = 'executable jar,  help ')
+        boolean help
+
         @Option (shortName = 's', longName ='send', description = 'send message to jms Queue')
         String sendText
 
         //@Option (paramLabel='Text', description = 'text to send to queue ')
         //String text
 
-        @Option (shortName = 'r', longName = 'receive', description = 'read message from jms Queue')
+        @Option (shortName = 'r', longName = 'receive',  description = 'read message from jms Queue')
         boolean receive
 
         @Option (shortName = 'e', longName = 'execute', description = 'run script file as closure, will be passed JMS session as param')
@@ -37,7 +45,7 @@ class Launcher {
 
     static MessageSystemClient mclient
 
-    static void main (args){
+    static void main (args) {
 
         mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
         //mclient = getWlsPlatform()
@@ -60,74 +68,47 @@ class Launcher {
 
 
         CliOptions options = new CliOptions()
-        def cli = new CliBuilder (usage: 'java -jar file [<Options>]')
-        cli.parseFromInstance (options, args)
+        def cli = new CliBuilder(usage: 'java -jar file [<Options>]')
+        cli.width = 80 //default is 74
+        cli.parseFromInstance(options, args)
 
         def message
 
-        if ((message = options.sendText)) {
-            send(message)
-
-        }
-        if (options.receive) {
-            message = receive()
-            println "read message : $message"
-        }
-        if (options.script) {
-            //todo - read file from command line, generate a closure from it and execute with withQueue action
-            if (!options.script.exists()) {
-                throw new FileNotFoundException ("script file ${options.script} doesnt exist")
-                System.exit (-1)
+        if (options.help ) {
+            cli.usage()
+        } else {
+            if ((message = options.sendText)) {
+                println "send message : $message"
+                send(message)
             }
+            if (options.receive) {
+                message = receive()
+                println "read message : $message, passsed Q: $options.receive"
+            }
+            if (options.script) {
 
-            String text = options.script.text
+                File f = new File (".")
+                println f.canonicalPath
+                println options.script.canonicalPath
+                Path path = FileSystems.getDefault().getPath(".").toAbsolutePath()
+                Path crpath = Paths.get("")
+                String s = crpath.toAbsolutePath().toString();
+                println "user dir  : " + System.getProperty("user.dir")
+                //Path path2 = FileSystems.getPath("").toAbsolutePath()
+
+                println "def path " + path.toString() + " cur rel path: $s"
+
+                //todo - read file from command line, generate a closure from it and execute with withQueue action
+                if (!options.script.exists()) {
+                    throw new FileNotFoundException("script file ${options.script} doesnt exist")
+                    System.exit(-1)
+                }
+
+                String text = options.script.text
 
 
+            }
         }
-
-    }
-
-    //hack to watch
-    static def getWlsPlatform () {
-
-        Properties env = System.getProperties()
-        ConfigSlurper slurper
-
-
-        slurper = new ConfigSlurper()
-        String providerUrl, senderCredentials, receiverCredentials
-
-        ClassLoader classLoader = Launcher.getClass().getClassLoader()
-        File configFile = new File(classLoader.getResource("ApplicationConfig.groovy").getFile())
-
-        String configText = configFile.text
-
-        File absPath =  configFile.getAbsoluteFile()
-
-        def url = new URL ("file:${configFile}")
-
-        //https://stackoverflow.com/questions/55092121/cant-get-groovy-configslurper-to-parse-a-string-and-find-result-as-property/55093357#55093357
-        def config = slurper.parse(configText)
-
-
-        def mp = config.messagePlatform
-        Map wls = config.messagePlatform.weblogic
-        if (wls)
-            providerUrl = "${wls?.protocol ?: ''}://${wls?.hostname ?: 'localhost'}:${wls?.port ?: '7001'}"
-        else
-            providerUrl = "invalid"
-        String defaultProviderUrl = wls.defaultProviderUrl
-        senderCredentials = env.getProperty("MVA_SENDER_SECURITY_CREDENTIALS")
-        receiverCredentials = env.getProperty("MVA_RECEIVER_SECURITY_CREDENTIALS")
-        if (!senderCredentials) {
-            wls.put('mvaSenderSecurityCredentials', "testSender1")
-        } else
-            wls.put ('mvaSenderSecurityCredentials', senderCredentials)
-        if (!receiverCredentials) {
-            wls.put ('mvaReceiverSecurityCredentials', "testReceiver1")
-        } else
-            wls.put ('mvaReceiverSecurityCredentials', receiverCredentials)
-        return new WlsJmsMessagePlatform(wls)
     }
 
     static def send (String text) {
