@@ -70,10 +70,10 @@ class Launcher {
             message = receive()
             println "read message : $message"
         }
-        /*if (options.execute) {
+        if (options.script) {
             //todo - read file from command line, generate a closure from it and execute with withQueue action
 
-        }*/
+        }
 
     }
 
