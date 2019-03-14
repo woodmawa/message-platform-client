@@ -4,6 +4,8 @@ import com.softwood.client.AbstractMessagePlatformFactory
 import com.softwood.client.MessagePlatformFactoryProducer
 import com.softwood.client.MessageSystemClient
 import com.softwood.implementation.JmsConnectionType
+import com.softwood.implementation.MessagePlatformFactory
+import com.softwood.implementation.WlsJmsMessagePlatform
 import groovy.cli.Option
 import groovy.cli.Unparsed
 import groovy.cli.picocli.CliBuilder
@@ -33,11 +35,12 @@ class Launcher {
         List remaining
     }
 
-    static MessageSystemClient mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+    static MessageSystemClient mclient
 
     static void main (args){
 
-
+        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+        //mclient = getWlsPlatform()
 
         //println "howdi "
         //System.exit(-1)
@@ -72,11 +75,60 @@ class Launcher {
         }
         if (options.script) {
             //todo - read file from command line, generate a closure from it and execute with withQueue action
+            if (!options.script.exists()) {
+                throw new FileNotFoundException ("script file ${options.script} doesnt exist")
+                System.exit (-1)
+            }
+
+            String text = options.script.text
+
 
         }
 
     }
 
+    //hack to watch
+    static def getWlsPlatform () {
+
+        Properties env = System.getProperties()
+        ConfigSlurper slurper
+
+
+        slurper = new ConfigSlurper()
+        String providerUrl, senderCredentials, receiverCredentials
+
+        ClassLoader classLoader = Launcher.getClass().getClassLoader()
+        File configFile = new File(classLoader.getResource("ApplicationConfig.groovy").getFile())
+
+        String configText = configFile.text
+
+        File absPath =  configFile.getAbsoluteFile()
+
+        def url = new URL ("file:${configFile}")
+
+        //https://stackoverflow.com/questions/55092121/cant-get-groovy-configslurper-to-parse-a-string-and-find-result-as-property/55093357#55093357
+        def config = slurper.parse(configText)
+
+
+        def mp = config.messagePlatform
+        Map wls = config.messagePlatform.weblogic
+        if (wls)
+            providerUrl = "${wls?.protocol ?: ''}://${wls?.hostname ?: 'localhost'}:${wls?.port ?: '7001'}"
+        else
+            providerUrl = "invalid"
+        String defaultProviderUrl = wls.defaultProviderUrl
+        senderCredentials = env.getProperty("MVA_SENDER_SECURITY_CREDENTIALS")
+        receiverCredentials = env.getProperty("MVA_RECEIVER_SECURITY_CREDENTIALS")
+        if (!senderCredentials) {
+            wls.put('mvaSenderSecurityCredentials', "testSender1")
+        } else
+            wls.put ('mvaSenderSecurityCredentials', senderCredentials)
+        if (!receiverCredentials) {
+            wls.put ('mvaReceiverSecurityCredentials', "testReceiver1")
+        } else
+            wls.put ('mvaReceiverSecurityCredentials', receiverCredentials)
+        return new WlsJmsMessagePlatform(wls)
+    }
 
     static def send (String text) {
         mclient.sendText("hello world")

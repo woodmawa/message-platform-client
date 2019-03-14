@@ -24,13 +24,13 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
         String providerUrl, senderCredentials, receiverCredentials
 
         ClassLoader classLoader = getClass().getClassLoader()
-        File configFile = new File(classLoader.getResource("ApplicationConfig.groovy").getFile())
+        // https://stackoverflow.com/questions/25362943/cant-load-resources-file-from-jar
+        InputStream configStream = classLoader.getResourceAsStream("ApplicationConfig.groovy")
 
-        String configText = configFile.text
-
-        File absPath =  configFile.getAbsoluteFile()
-
-        def url = new URL ("file:${configFile}")
+        if (!configStream) {
+            throw new FileNotFoundException("Cant find application configuration file : ApplicationConfig.groovy")
+        }
+        String configText = configStream.text
 
         //https://stackoverflow.com/questions/55092121/cant-get-groovy-configslurper-to-parse-a-string-and-find-result-as-property/55093357#55093357
         def config = slurper.parse(configText)
