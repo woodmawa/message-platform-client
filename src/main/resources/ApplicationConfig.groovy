@@ -1,5 +1,7 @@
 
 messagePlatform {
+
+    //this is saved as platform environment in the platform instance
     weblogic {
         protocol = 't3'
         hostname = 'localhost'
@@ -12,6 +14,7 @@ messagePlatform {
         defaultSubscriptionReceiveTimeout = 1L
         errorQueue = 'jms/errorQueue'
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
+        defaultScriptDirectory = "~${File.separatorChar}.scripts"  //set to users home directory
     }
 
     activeMQ {

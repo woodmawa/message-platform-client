@@ -14,6 +14,7 @@ import picocli.CommandLine
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.regex.Matcher
 
 /**
  * simple command line driver for fat jar functions
@@ -86,16 +87,25 @@ class Launcher {
 
         if (options.script) {
 
-            String base = Paths.get("").toAbsolutePath().toString();  //works in fat jar and shows directory jar called from
-            // println "user dir  : " + System.getProperty("user.dir")
-            //String invokedFromDirectory = System.getProperty("user.dir")
+            //try and find script relative to fatjar directory.  In fatjar this  shows the directory the fatjar was called from - else try backup script source below
+            String base = Paths.get("").toAbsolutePath().toString();
+
+            String userdir = System.getProperty("user.dir")
 
             String script = options.script
             String sourceName = "$base${File.separatorChar}$script"
+            String backupScriptDir = mclient.getPlatformEnvironmentProperty('defaultScriptDirectory') ?: "~"
+            // substitute the ~ for the users actual home path
+            backupScriptDir = backupScriptDir.replaceFirst("^~", Matcher.quoteReplacement(System.getProperty("user.home")))
+            String defaultSourceName = "$backupScriptDir${File.separatorChar}$script"
             File source = new File (sourceName.toString())
+            File backupSource = new File (defaultSourceName.toString())
             def text = ""
             if (source.exists()) {
                 text = "{it-> ${source.text}}"
+            } else if (backupSource.exists()) {
+                println "using backup script source ${backupSource.canonicalPath}"
+                text = "{it-> ${backupSource.text}}"
             } else {
                 throw new FileNotFoundException("cant find script file ${source.canonicalPath} passed as argument to Execute action")
             }
