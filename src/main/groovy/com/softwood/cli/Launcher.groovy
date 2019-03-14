@@ -48,10 +48,7 @@ class Launcher {
     static void main (args) {
 
         mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
-        //mclient = getWlsPlatform()
 
-        //println "howdi "
-        //System.exit(-1)
         /*def cli = new CliBuilder(name: 'jmsClient',
                 usage:'java -jar message-platform-client [<options>]',
                 header: 'Options:',
@@ -66,7 +63,6 @@ class Launcher {
 
         def options = cli.parse(args)*/
 
-
         CliOptions options = new CliOptions()
         def cli = new CliBuilder(usage: 'java -jar file [<Options>]')
         cli.width = 80 //default is 74
@@ -74,52 +70,46 @@ class Launcher {
 
         def message
 
-        if (options.help ) {
+        if (options.help) {
             cli.usage()
-        } else {
-            if ((message = options.sendText)) {
-                println "send message : $message"
-                send(message)
-            }
-            if (options.receive) {
-                message = receive()
-                println "read message : $message, passsed Q: $options.receive"
-            }
-            if (options.script) {
-
-                File f = new File (".")
-                println f.canonicalPath
-                println options.script.canonicalPath
-                Path path = FileSystems.getDefault().getPath(".").toAbsolutePath()
-                Path crpath = Paths.get("")
-                String s = crpath.toAbsolutePath().toString();
-                println "user dir  : " + System.getProperty("user.dir")
-                //Path path2 = FileSystems.getPath(""). toAbsolutePath()
-
-                println "def path " + path.toString() + " cur rel path: $s"
-
-                //todo - read file from command line, generate a closure from it and execute with withQueue action
-                if (!options.script.exists()) {
-                    throw new FileNotFoundException("script file ${options.script} doesnt exist")
-                    System.exit(-1)
-                }
-
-                String text = options.script.text
-
-
-            }
+            return
         }
+
+        if ((message = options.sendText)) {
+            println "send message : $message"
+            send(message)
+        }
+        if (options.receive) {
+            message = receive()
+            println "read message : $message, passsed Q: $options.receive"
+        }
+
+        if (options.script) {
+
+            //todo source the file content then use that to build a closure
+            def text = "{it -> println it;it}"
+            GroovyShell shell = new GroovyShell()
+            def clos = shell.evaluate("$text")
+            def result = clos("hi")
+            println result
+
+            //todo when ready invoke:  result = withPublisherTopic (clos)
+        }
+
     }
 
+    /**
+     * support routines for above
+     */
     static def send (String text) {
-        mclient.sendText("hello world")
+        mclient.sendText(text)
         mclient.tidyUpSender()
     }
 
     static def withSenderQueue (Closure work) {
         def q = mclient.getQueue (mclient.getPlatformEnvironmentProperty('orderQueue'))
         mclient.withQueue (JmsConnectionType.Sender, q, work)
-     }
+    }
 
     static def withReceiverQueue (Closure work) {
         def q = mclient.getQueue (mclient.getPlatformEnvironmentProperty('orderQueue'))
@@ -143,5 +133,6 @@ class Launcher {
         def t = mclient.getTopic (mclient.getPlatformEnvironmentProperty('orderTopic'))
         mclient.withQueue (JmsConnectionType.Subscriber, t, work)
     }
+
 
 }
