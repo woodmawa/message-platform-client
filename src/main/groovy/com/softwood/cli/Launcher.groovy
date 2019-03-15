@@ -113,7 +113,7 @@ class Launcher {
                 throw new FileNotFoundException("cant find script file ${source.canonicalPath} passed as argument to Execute action")
             }
 
-            //todo source the file content then use that to build a closure
+            //create a closure from users script and pass to withQueue platform resource handler
             GroovyShell shell = new GroovyShell()
             def clos = shell.evaluate("$text")
             /*def result = clos("hi")
@@ -147,11 +147,9 @@ class Launcher {
                 throw new FileNotFoundException("cant find script file ${source.canonicalPath} passed as argument to Execute action")
             }
 
-            //todo source the file content then use that to build a closure
+            //create a closure from users script and pass to withQueue platform resource handler
             GroovyShell shell = new GroovyShell()
             def clos = shell.evaluate("$text")
-            /*def result = clos("hi")
-            println result*/
 
             def result = withReceiverQueue (clos)
         }
