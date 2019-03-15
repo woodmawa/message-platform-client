@@ -85,7 +85,8 @@ class Launcher {
             println "send message : $message"
             send(message)
         }
-        if (options.receiveQ) {
+        //because of groovy truth - need to be explicit between null or [] size 0
+        if (options.receiveQ != null) {
             Queue q = null
             String lookupQname
             if (options.receiveQ.size() == 1) {
