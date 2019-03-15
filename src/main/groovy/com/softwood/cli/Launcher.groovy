@@ -34,8 +34,10 @@ class Launcher {
         //@Option (paramLabel='Text', description = 'text to send to queue ')
         //String text
 
-        @Option (shortName = 'r', longName = 'receive',  description = 'read message from jms Queue')
-        List receiveQ
+        //to get optionality of arg val or not indicate it can be optional and make it attribut be a List.
+        // if arg not present - list be null, if arg is present, it will be empty list or have the values
+        @Option (shortName = 'r', longName = 'receive',  numberOfArguments = 1, optionalArg = true,  description = 'read message from jms Queue')
+        List<String> receiveQ
 
         @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS Sender session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
         File sscript
@@ -84,8 +86,16 @@ class Launcher {
             send(message)
         }
         if (options.receiveQ) {
-            message = receive()
-            println "read message : $message, passsed Q: $options.receiveQ"
+            Queue q = null
+            String lookupQname
+            if (options.receiveQ.size() == 1) {
+                lookupQname = options.receiveQ[0]
+                q = mclient.getQueue(lookupQname)
+                message = receive(q)
+            } else
+                message = receive()
+
+            println "read message : $message, passsed Q: ${lookupQname ?: mclient.getPlatformEnvironmentProperty('orderQueue') }"
         }
 
         if (options.sscript) {
@@ -174,7 +184,7 @@ class Launcher {
         mclient.withQueue (JmsConnectionType.Receiver, q, work)
     }
 
-    static def receive () {
+    static def receive (queue=null) {
         mclient.receiverStart()
         def result = mclient.receiveText ()
 
