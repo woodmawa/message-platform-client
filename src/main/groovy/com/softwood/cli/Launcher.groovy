@@ -91,7 +91,7 @@ class Launcher {
         if (options.sscript) {
 
             //try and find script relative to fatjar directory.  In fatjar this  shows the directory the fatjar was called from - else try backup script source below
-            String base = Paths.get("").toAbsolutePath().toString();
+            String base = Paths.get("").toAbsolutePath().toString()
 
             String userdir = System.getProperty("user.dir")
 
