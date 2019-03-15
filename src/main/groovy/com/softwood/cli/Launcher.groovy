@@ -35,7 +35,7 @@ class Launcher {
         //String text
 
         @Option (shortName = 'r', longName = 'receive',  description = 'read message from jms Queue')
-        boolean receive
+        List receiveQ
 
         @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS Sender session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
         File sscript
@@ -83,9 +83,9 @@ class Launcher {
             println "send message : $message"
             send(message)
         }
-        if (options.receive) {
+        if (options.receiveQ) {
             message = receive()
-            println "read message : $message, passsed Q: $options.receive"
+            println "read message : $message, passsed Q: $options.receiveQ"
         }
 
         if (options.sscript) {
