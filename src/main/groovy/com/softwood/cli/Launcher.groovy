@@ -99,7 +99,7 @@ class Launcher {
 
         }
 
-        //now create the connection and sessions etc 
+        //now create the connection and sessions etc
         mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
 
 
