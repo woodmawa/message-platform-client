@@ -45,6 +45,12 @@ class Launcher {
         @Option (shortName = 'er', longName = 'execute-receiver', description = 'run script file as closure, will be passed JMS Receiver session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
         File rscript
 
+        @Option (shortName = 'q', longName = 'queue', description = "override the default Queue - 'jms/workOrderQueue' setup in config.  provide the name, and sofwaree  will do a lookup and use this Queue instead ")
+        String queueName
+
+        @Option (shortName = 't', longName = 'topic', description = "override the default Topic - 'jms/workOrderTopic' setup in config.  provide the name sofwaree  will do a lookup and use this Queue instead ")
+        String topicName
+
         @Unparsed (description = 'positional parameters')
         List remaining
     }
@@ -52,8 +58,6 @@ class Launcher {
     static MessageSystemClient mclient
 
     static void main (args) {
-
-        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
 
         /*def cli = new CliBuilder(name: 'jmsClient',
                 usage:'java -jar message-platform-client [<options>]',
@@ -80,6 +84,25 @@ class Launcher {
             cli.usage()
             return
         }
+
+        //check for ovveride
+        if (options.queueName) {
+            //override the default queue from ApplicationConfig
+            def lookupQname = options.queueName
+            mclient.getPlatformEnvironmentProperty().put ("orderQueue", lookupQname)
+
+        }
+        if (options.topicName) {
+            //override the default Topic from ApplicationConfig
+            def lookupTname = options.receiveQ[0]
+            mclient.getPlatformEnvironmentProperty().put ("orderTopic", lookupTname)
+
+        }
+
+        //now create the connection and sessions etc 
+        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+
+
 
         if ((message = options.sendText)) {
             println "send message : $message"
