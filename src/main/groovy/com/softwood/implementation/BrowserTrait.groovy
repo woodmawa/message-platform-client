@@ -238,6 +238,36 @@ trait BrowserTrait {
         body?.toString()
     }
 
+    /**
+     * delegates to browse (browser) using stored thread local
+     *
+     * @return toString on the message
+     */
+    String browseTopOfQueue (QueueBrowser browser) {
+        def queueBrowser
+
+        if (browser == null) {
+            queueBrowser = qBrowser.get()
+        }
+
+        println("browsing Queue " + queueBrowser.getQueue().queueName)
+        Enumeration list =  browse(queueBrowser)
+        //not sure what order asc/desc
+        Message m
+        if (list?.hasMoreElements()) {
+            m = list.nextElement()
+        } else
+            return null //
+
+        def body = m?.getBody (Object)
+        body?.toString()
+    }
+
+    /**
+     * get list of messages from Queue using the referencing qBrowser
+     * @param qBrowser
+     * @return
+     */
     Enumeration<Message> browse(QueueBrowser qBrowser) {
         def text
         Enumeration list
