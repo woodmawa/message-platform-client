@@ -255,6 +255,7 @@ trait ReceiverTrait {
     }
 
     def tidyUpReceiver () {
+        qReceiver.set (null)
         receiverQconnection.get().stop()
 
         receiverQsession.get()?.close()

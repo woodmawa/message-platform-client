@@ -184,6 +184,7 @@ trait SenderTrait {
     }
 
     def tidyUpSender () {
+        qSender.set (null)
         senderQsession.get()?.close()
         senderQconnection.get()?.close()
         senderQsession.set (null)

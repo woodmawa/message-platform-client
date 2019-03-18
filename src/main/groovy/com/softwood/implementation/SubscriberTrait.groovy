@@ -29,6 +29,9 @@ import javax.naming.NamingException
  * @Copyright Softwood Consulting ltd, 2019
  *
  */
+
+//todo potentially need to add subscriber functions for queue subscribers!
+//todo however this would work for only 1:n delivery (queue semantics) whereas topic subscription provides n:n
 trait SubscriberTrait {
 
     private ThreadLocal<TopicConnection> subscriberTconnection = new ThreadLocal<>()
@@ -302,6 +305,7 @@ trait SubscriberTrait {
     }
 
     def tidyUpSubscriber () {
+
         subscriberTconnection.get().stop()
 
         subscriberTsession.get()?.close()

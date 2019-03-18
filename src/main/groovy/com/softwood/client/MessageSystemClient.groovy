@@ -3,6 +3,7 @@ package com.softwood.client
 import com.softwood.implementation.JmsConnectionType
 
 import javax.jms.MessageListener
+import javax.jms.QueueBrowser
 import javax.jms.QueueConnection
 import javax.jms.QueueReceiver
 import javax.jms.Message
@@ -56,7 +57,12 @@ interface MessageSystemClient {
     void subscribersStop()
 
     //Q browse
+    int browseQueueSize (Queue queue)
+    int browseQueueSize ()
+    String browseTopOfQueue(Queue queue)
+    String browseTopOfQueue()
     Message browse (String queueName)
+    Message browse (QueueBrowser browser)
     Message browse (Queue queue)
 
     // excecute users closure asa resource with auto cleanup at end
