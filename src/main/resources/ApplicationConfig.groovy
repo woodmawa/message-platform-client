@@ -3,16 +3,18 @@ messagePlatform {
 
     //this is saved as platform environment in the platform instance
     weblogic {
-        protocol = 't3'
+        protocol = 't3'  //change to 't3s' for secure connection
         hostname = 'localhost'
-        port = '7001'
+        port = '7001'   //default is 7002 for secure
         defaultProviderUrl = "t3://localhost:7001"
         mvaSenderSecurityPrincipal = 'cramer'
         mvaReceiverSecurityPrincipal = 'cortex'
+        mvaBrowserSecurityPrincipal = 'viewer'
         orderQueue = 'jms/workOrderQueue'
+        orderTopic = 'jms/workOrderTopic'
         orderResultsQueue = 'jms/workOrderResultsQueue'
-        defaultSubscriptionReceiveTimeout = 1L
         errorQueue = 'jms/errorQueue'
+        defaultSubscriptionReceiveTimeout = 1L
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
         defaultScriptDirectory = "~${File.separatorChar}.scripts"  //set to users home directory
     }

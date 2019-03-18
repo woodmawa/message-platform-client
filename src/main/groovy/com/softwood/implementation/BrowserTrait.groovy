@@ -45,7 +45,7 @@ trait BrowserTrait {
         // call dependency on implenting parent, expecting map of key message platform variables
         Map env = this.getPlatformEnvironment()
 
-        QueueConnection rqc
+        QueueConnection bqc
         //queue connection factor should have been setup by parent's implementing class constructor
         if (!qcf) {
             try {
@@ -65,27 +65,27 @@ trait BrowserTrait {
             //set thread local connection {
 
             if (!browserQconnection.get()) {
-                println "createReceiverQueueConnection: no Q connection - so create one "
+                println "createBrowserQueueConnection: no Q connection - so create one "
 
-                receiverPrinciple = env.get('mvaReceiverSecurityPrincipal')
-                receiverCredentials = env.get('mvaReceiverSecurityCredentials')
-                rqc = qcf.createQueueConnection(receiverPrinciple, receiverCredentials)
-                browserQconnection.set(rqc)
-                println("Got QueueConnection " + rqc.toString())
+                receiverPrinciple = env.get('mvaBrowserSecurityPrincipal')
+                receiverCredentials = env.get('mvaBrowserSecurityCredentials')
+                bqc = qcf.createQueueConnection(receiverPrinciple, receiverCredentials)
+                browserQconnection.set(bqc)
+                println("Got QueueConnection " + bqc.toString())
             } else
             //just return existing thread local version
-                rqc = browserQconnection.get()
+                bqc = browserQconnection.get()
 
         }
         catch (JMSException jmse) {
             jmse.printStackTrace(System.err)
             System.exit(0)
         }
-        rqc
+        bqc
     }
 
     /**
-     * do i need to start q to peek at it ??
+     * do i need to start q to peek at it ??  - needs a test
      * need to start a connection before you can get messages from it
      */
     void browserStart () {
@@ -119,7 +119,7 @@ trait BrowserTrait {
         try {
             //if no sender queue connection - then build one
             if (!browserQconnection.get()) {
-                println "createReceiverQueueSession: no existing  Q connection for thread - create one "
+                println "createBrowserQueueSession: no existing  Q connection for thread - create one "
                 if (qc == null) {
                     //invoke the impl class parent service to build queueConnection for sender
                     browserQconnection.set(createReceiverQueueConnection())
@@ -128,7 +128,7 @@ trait BrowserTrait {
             }
             if (!browserQsession.get()) {
                 // set thread local session
-                println("createReceiverQueueSession: no QueueSession created one for thread - " + qs.toString())
+                println("createBrowserQueueSession: no QueueSession created one for thread - " + qs.toString())
                 browserQsession.set(qs = browserQconnection.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
             }else {
                 //just return existing thread local Q session
@@ -147,14 +147,14 @@ trait BrowserTrait {
 
         QueueBrowser browser
         if (!browserQsession.get())
-            browserQsession.set (createReceiverQueueSession())
+            browserQsession.set (createBrowserQueueSession())
 
         // create QueueBrowser from the receiver session
         try {
-            def qsession = browserQsession.get()
+            def qbsession = browserQsession.get()
 
             if (!qBrowser.get()) {
-                qBrowser.set(browser = qsession.createBrowser(q))
+                qBrowser.set(browser = qbsession.createBrowser(q))
                 println("Got QueueBrowser " + browser.toString())
             } else {
                 browser = qBrowser.get()
