@@ -115,7 +115,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         // lookup Queue
         Queue queue
         try {
-            queue = (Queue) ctx.get().lookup(queueName)
+            queue = (Queue) ctx.lookup(queueName)
         }
         catch (NamingException ne) {
             ne.printStackTrace(System.err)
@@ -134,7 +134,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         // lookup Queue
         Topic topic
         try {
-            topic = (Topic) ctx.get().lookup(topicName)
+            topic = (Topic) ctx.lookup(topicName)
         }
         catch (NamingException ne) {
             ne.printStackTrace(System.err)
