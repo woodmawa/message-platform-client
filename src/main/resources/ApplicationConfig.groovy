@@ -14,6 +14,9 @@ messagePlatform {
         orderTopic = 'jms/workOrderTopic'
         orderResultsQueue = 'jms/workOrderResultsQueue'
         errorQueue = 'jms/errorQueue'
+        DEFAULT_QUEUE = 'jms/workOrderQueue'  //fallback default queue
+        DEFAULT_TOPIC = 'jms/workOrderTopic'
+
         defaultSubscriptionReceiveTimeout = 1L
         INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
         defaultScriptDirectory = "~${File.separatorChar}.scripts"  //set to users home directory

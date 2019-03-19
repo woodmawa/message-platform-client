@@ -51,6 +51,9 @@ class Launcher {
         @Option (shortName = 't', longName = 'topic', description = "override the default Topic - 'jms/workOrderTopic' setup in config.  provide the name sofwaree  will do a lookup and use this Queue instead ")
         String topicName
 
+        @Option (shortName = 'c', longName = 'credentials', description = "credentials required to validate script caller can execute actions on the command line  ")
+        String credentials
+
         @Unparsed (description = 'positional parameters')
         List remaining
     }
@@ -78,6 +81,10 @@ class Launcher {
         cli.width = 80 //default is 74
         cli.parseFromInstance(options, args)
 
+        //now get message platform from Factory
+        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+
+
         def message
 
         if (options.help) {
@@ -85,7 +92,14 @@ class Launcher {
             return
         }
 
-        //check for ovveride
+        if (options.credentials){
+            //todo validate something
+        } else {
+            //exit the cmdline process with error message if
+            //credentials are required to run cmdline process
+        }
+
+        //check for queue or topic name default ovveride.  If present update environment before first create
         if (options.queueName) {
             //override the default queue from ApplicationConfig
             def lookupQname = options.queueName
@@ -98,10 +112,6 @@ class Launcher {
             mclient.getPlatformEnvironmentProperty().put ("orderTopic", lookupTname)
 
         }
-
-        //now create the connection and sessions etc
-        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
-
 
 
         if ((message = options.sendText)) {

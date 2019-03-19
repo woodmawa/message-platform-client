@@ -34,7 +34,7 @@ enum JmsConnectionType {
 
 class WlsJmsMessagePlatform implements MessageSystemClient,
         PublisherTrait, SenderTrait,
-        SubscriberTrait, ReceiverTrait
+        SubscriberTrait, ReceiverTrait, BrowserTrait
 {
 
     //private ThreadLocal<Environment> wlsenv = new ThreadLocal<>()

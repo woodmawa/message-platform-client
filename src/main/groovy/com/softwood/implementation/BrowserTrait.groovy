@@ -287,6 +287,85 @@ trait BrowserTrait {
         return list
     }
 
+    /**
+     * get list of messages from Queue using the referencing queue
+     * @param queue to browse
+     * @return Enumeration<Message>
+     */
+    Enumeration<Message> browse(Queue queue) {
+
+        if (!qBrowser.get()){
+            QueueSession qs = createBrowserQueueSession(browserQconnection.get())
+            QueueBrowser qb = qs.createBrowser (queue)
+            qBrowser.set(qb)
+        } else if (queue != qBrowser.get()?.getQueue()) {
+            //override the cached thread local
+            QueueSession qs = createBrowserQueueSession(browserQconnection.get())
+            QueueBrowser qb = qs.createBrowser (queue)
+            qBrowser.set(qb)
+        }
+
+        def text
+        Enumeration elist
+        try {
+            println("receive : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
+
+            elist = qBrowser?.getEnumeration ()
+        }
+        catch (JMSException jmse) {
+            tidyUpBrowser()
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+        if (elist == null) {
+            elist = []
+        }
+        return elist
+    }
+
+    /**
+     * get list of messages from Queue using the queueName
+     * @param queue to browse
+     * @return Enumeration<Message>
+     */
+    Enumeration<Message> browse(String queueName = null) {
+
+        Queue queue
+        Queue qbrowser
+        if (queueName) {
+            queue = this.getQueue(queueName)
+            qbrowser = createQueueBrowser(queue)
+        } else {
+            //assume default
+            if (qBrowser)
+                qbrowser = qBrowser.get()
+            else {
+                //if default qBrowser not yet set - define one
+
+                queueName = getPlatformEnvironmentProperty.get ('DEFAULT_QUEUE')
+                queue = this.getQueue(queueName)
+                qBrowser.set (createQueueBrowser(queue))
+            }
+        }
+
+
+        def text
+        Enumeration elist
+        try {
+            println("browse : ${qbrowser.getQueueName()} " )
+
+            elist = browse(qbrowser)
+        }
+        catch (JMSException jmse) {
+            tidyUpBrowser()
+            jmse.printStackTrace(System.err)
+            System.exit(0)
+        }
+        if (elist == null) {
+            elist = []
+        }
+        return elist
+    }
 
     def tidyUpBrowser () {
         qBrowser.set(null)
