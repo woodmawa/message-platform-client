@@ -56,7 +56,7 @@ trait SubscriberTrait {
         //topic connection factor should have been setup by parent's implementing class constructor
         if (!tcf) {
             try {
-                tcf = (TopicConnectionFactory) ctx.get().lookup(TCF_NAME)
+                tcf = (TopicConnectionFactory) ctx.lookup(TCF_NAME)
                 println("Got TopicConnectionFactory " + tcf.toString())
 
             }

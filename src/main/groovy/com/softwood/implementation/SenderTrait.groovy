@@ -48,7 +48,7 @@ trait SenderTrait {
         //queue connection factor should have been setup by parent's implementing class constructor
         if (!qcf) {
             try {
-                qcf = (QueueConnectionFactory)ctx.get().lookup(QCF_NAME)
+                qcf = (QueueConnectionFactory)ctx.lookup(QCF_NAME)
             }
             catch (NamingException ne) {
                 ne.printStackTrace(System.err)

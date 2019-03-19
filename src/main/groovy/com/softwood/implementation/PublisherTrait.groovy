@@ -55,7 +55,7 @@ trait PublisherTrait {
         //queue connection factor should have been setup by parent's implementing class constructor
         if (!tcf) {
             try {
-                tcf = (TopicConnectionFactory)ctx.get().lookup(TCF_NAME)
+                tcf = (TopicConnectionFactory)ctx.lookup(TCF_NAME)
             }
             catch (NamingException ne) {
                 ne.printStackTrace(System.err)

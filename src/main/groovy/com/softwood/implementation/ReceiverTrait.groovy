@@ -52,7 +52,7 @@ trait ReceiverTrait {
         //queue connection factor should have been setup by parent's implementing class constructor
         if (!qcf) {
             try {
-                qcf = (QueueConnectionFactory) ctx.get().lookup(QCF_NAME)
+                qcf = (QueueConnectionFactory) ctx.lookup(QCF_NAME)
                 log.debug("Got QueueConnectionFactory " + qcf.toString())
 
             }

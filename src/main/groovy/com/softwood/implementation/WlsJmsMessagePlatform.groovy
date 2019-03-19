@@ -40,7 +40,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
 {
 
     //private ThreadLocal<Environment> wlsenv = new ThreadLocal<>()
-    private ThreadLocal<Context> ctx= new ThreadLocal<>()  //heavy weight object - may want to make static at some point
+    private static ctx  //heavy weight object - may want to make static at some point
     private Map operatingEnv
     private String QCF_NAME = "jms/queueConnectionFactory"
     private String QTF_NAME = "jms/topicConnectionFactory"
@@ -65,7 +65,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         Environment wlsenv =  new Environment ()
         wlsenv.setProviderUrl (providerUrl)
         try {
-            ctx.set (wlsenv.getInitialContext())//new InitialContext(properties)
+            ctx = wlsenv.getInitialContext()//new InitialContext(properties)
         } catch (NamingException ne) {
             ne.printStackTrace(System.err)
             System.exit(0)
