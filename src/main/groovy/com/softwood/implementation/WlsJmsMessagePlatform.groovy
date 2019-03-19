@@ -2,6 +2,8 @@ package com.softwood.implementation
 
 
 import com.softwood.client.MessageSystemClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import weblogic.jndi.Environment
 import javax.jms.*
 import javax.naming.Context
@@ -47,6 +49,8 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
     private QueueConnectionFactory qcf = null
     private TopicConnectionFactory qtf = null
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass())
+
     WlsJmsMessagePlatform (final Map env) {
 
         String providerUrl = env?.providerUrl ?: env?.defaultProviderUrl
@@ -67,6 +71,10 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
             System.exit(0)
         }
 
+    }
+
+    Logger getLogger() {
+        log
     }
 
     //called by jms traits to get required details for platform

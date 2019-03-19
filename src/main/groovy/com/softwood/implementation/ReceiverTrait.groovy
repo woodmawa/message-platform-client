@@ -1,5 +1,7 @@
 package com.softwood.implementation
 
+import org.slf4j.Logger
+
 import javax.jms.JMSException
 import javax.jms.Message
 import javax.jms.Queue
@@ -31,6 +33,7 @@ trait ReceiverTrait {
     ThreadLocal<QueueSession> receiverQsession = new ThreadLocal<>()
     private ThreadLocal<QueueReceiver> qReceiver = new ThreadLocal<>()
 
+    Logger log = this.getLogger()  //get implementing classes logger
     /**
      * use queue connection factory to create QueueConnection object for sender using appropriate
      * security principal and credentials.  queue connection created is also stored in a threadlocal
@@ -50,7 +53,7 @@ trait ReceiverTrait {
         if (!qcf) {
             try {
                 qcf = (QueueConnectionFactory) ctx.get().lookup(QCF_NAME)
-                println("Got QueueConnectionFactory " + qcf.toString())
+                log.debug("Got QueueConnectionFactory " + qcf.toString())
 
             }
             catch (NamingException ne) {
@@ -65,13 +68,13 @@ trait ReceiverTrait {
             //set thread local connection {
 
             if (!receiverQconnection.get()) {
-                println "createReceiverQueueConnection: no Q connection - so create one "
+                log.debug "createReceiverQueueConnection: no Q connection - so create one "
 
                 receiverPrinciple = env.get('mvaReceiverSecurityPrincipal')
                 receiverCredentials = env.get('mvaReceiverSecurityCredentials')
                 rqc = qcf.createQueueConnection(receiverPrinciple, receiverCredentials)
                 receiverQconnection.set(rqc)
-                println("Got QueueConnection " + rqc.toString())
+                log.debug ("Got QueueConnection " + rqc.toString())
             } else
                 //just return existing thread local version
                 rqc = receiverQconnection.get()
@@ -92,13 +95,13 @@ trait ReceiverTrait {
         if (!receiverQconnection.get()) {
             createReceiverQueueConnection()
         }
-        println("start QueueConnection on ${receiverQconnection.get()}" )
+        log.debug("start QueueConnection on ${receiverQconnection.get()}" )
 
         receiverQconnection.get()?.start()
     }
 
     void receiverStop() {
-        println("stop QueueConnection " )
+        log .debug("stop QueueConnection " )
 
         receiverQconnection.get()?.stop()
     }
@@ -118,7 +121,7 @@ trait ReceiverTrait {
         try {
             //if no sender queue connection - then build one
             if (!receiverQconnection.get()) {
-                println "createReceiverQueueSession: no existing  Q connection for thread - create one "
+                log.debug() "createReceiverQueueSession: no existing  Q connection for thread - create one "
                 if (qc == null) {
                     //invoke the impl class parent service to build queueConnection for sender
                     receiverQconnection.set(createReceiverQueueConnection())
@@ -127,7 +130,7 @@ trait ReceiverTrait {
             }
             if (!receiverQsession.get()) {
                 // set thread local session
-                println("createReceiverQueueSession: no QueueSession created one for thread - " + qs.toString())
+                log.debug("createReceiverQueueSession: no QueueSession created one for thread - " + qs.toString())
                 receiverQsession.set(qs = receiverQconnection.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
             }else {
                 //just return existing thread local Q session
@@ -154,7 +157,7 @@ trait ReceiverTrait {
 
             if (!qReceiver.get()) {
                 qReceiver.set(receiver = qsession.createReceiver(q))
-                println("Got QueueReceiver " + receiver.toString())
+                log.debug ("Got QueueReceiver " + receiver.toString())
             } else {
                 receiver = qReceiver.get()
             }
@@ -176,7 +179,7 @@ trait ReceiverTrait {
         def qrecvr
         if (!qReceiver.get()) {
 
-            println("receiveText no receiver - create one  " )
+            log.debug ("receiveText no receiver - create one  " )
 
             Queue q
             String qname
@@ -192,32 +195,18 @@ trait ReceiverTrait {
 
         qrecvr = qReceiver.get()
 
-        println("reading from Queue " + qrecvr.getQueue().queueName)
+        log.debug ("reading from Queue " + qrecvr.getQueue().queueName)
         TextMessage txtMess =  receive(qrecvr) as TextMessage
         String text = txtMess.getText()
     }
 
-    /* test hack
-    String readQ () {
-        println "got queue connection factory $qcf"
-        QueueConnection qc= createReceiverQueueConnection()
-        createReceiverQueueSession()
-        Queue q = getQueue (this.operatingEnv.get('orderQueue'))
-        println "got q ${q.queueName}"
-        def recvr = createQueueReceiver(q)
-        qc.start()
-        println "start connection $qc"
-        def mess = receive (recvr)
-        println "read : " + mess.getText()
-    }
-    */
 
     Message receive(QueueReceiver qrecvr) {
         def text
         Message message
         TextMessage txtMess
         try {
-            println("receive : use  " + qrecvr.toString() + " to read from Q : " + qrecvr.getQueue().queueName)
+            log.debug("receive : use  " + qrecvr.toString() + " to read from Q : " + qrecvr.getQueue().queueName)
 
             message = qrecvr.receive(1L)
         }
