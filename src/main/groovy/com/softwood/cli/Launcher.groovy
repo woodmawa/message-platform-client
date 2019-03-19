@@ -11,6 +11,9 @@ import groovy.cli.Unparsed
 import groovy.cli.picocli.CliBuilder
 import picocli.CommandLine
 
+import javax.jms.Message
+import javax.jms.Queue
+import javax.jms.Topic
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -53,6 +56,12 @@ class Launcher {
 
         @Option (shortName = 'c', longName = 'credentials', description = "credentials required to validate script caller can execute actions on the command line  ")
         String credentials
+
+        @Option (shortName = 'br', longName = 'browse', numberOfArguments = 1, optionalArg = true, description = "browse queue - or DEFAULT_QUEUE if no queue is specified ")
+        List<String> browseQueue
+
+        @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse queue return the size of the messages on the queue ")
+        List<String> browseQueueNameSize
 
         @Unparsed (description = 'positional parameters')
         List remaining
@@ -113,6 +122,30 @@ class Launcher {
 
         }
 
+        if (options.browseQueueNameSize != null) {
+            Queue q = null
+            String lookupQname
+            if (options.browseQueueNameSize.size() > 0)
+                lookupQname = options.browseQueueNameSize[0]
+            else {
+                Map envMap = mclient.getPlatformEnvironment()
+                lookupQname = envMap.get("DEFAULT_QUEUE")
+            }
+            q = mclient.getQueue(lookupQname)
+            int size  = browseQueueSize(q)
+
+            println "read message queue size  : $size, passsed Q: ${lookupQname ?: mclient.getPlatformEnvironmentProperty('orderQueue') }"
+        }
+
+        if (options.browseQueue != null) {
+            Queue q = null
+            String lookupQname
+            lookupQname = options.browseQueue[0]
+            q = mclient.getQueue(lookupQname)
+            message = browse(q)
+
+            println "read message : $message, passsed Q: ${lookupQname ?: mclient.getPlatformEnvironmentProperty('orderQueue') }"
+        }
 
         if ((message = options.sendText)) {
             println "send message : $message"
@@ -226,6 +259,22 @@ class Launcher {
 
         mclient.tidyUpReceiver()
         result
+    }
+
+    static Enumeration<Message> browse (queue=null) {
+        mclient.browserStart()
+        def result = mclient.browse ()
+
+        mclient.tidyUpBrowser()
+        result
+    }
+
+    static int browseQueueSize (queue=null) {
+        mclient.browserStart()
+        int size = mclient.browseQueueSize (queue)
+
+        mclient.tidyUpBrowser()
+        size
     }
 
     static def withPublisherTopic (Closure work) {

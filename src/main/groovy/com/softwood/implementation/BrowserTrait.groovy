@@ -59,19 +59,19 @@ trait BrowserTrait {
             }
         }
 
-        String receiverPrinciple
-        String receiverCredentials
+        String browserPrinciple
+        String browserCredentials
         try {
             //set thread local connection {
 
             if (!browserQconnection.get()) {
                 println "createBrowserQueueConnection: no Q connection - so create one "
 
-                receiverPrinciple = env.get('mvaBrowserSecurityPrincipal')
-                receiverCredentials = env.get('mvaBrowserSecurityCredentials')
-                bqc = qcf.createQueueConnection(receiverPrinciple, receiverCredentials)
+                browserPrinciple = env.get('mvaBrowserSecurityPrincipal')
+                browserCredentials = env.get('mvaBrowserSecurityCredentials')
+                bqc = qcf.createQueueConnection(browserPrinciple, browserCredentials)
                 browserQconnection.set(bqc)
-                println("Got QueueConnection " + bqc.toString())
+                println("Got browser QueueConnection " + bqc.toString())
             } else
             //just return existing thread local version
                 bqc = browserQconnection.get()

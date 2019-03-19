@@ -79,7 +79,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
 
     //called by jms traits to get required details for platform
     Map getPlatformEnvironment () {
-        final Map env = operatingEnv.asImmutable()
+        Map env = operatingEnv.asImmutable()
         env
     }
 

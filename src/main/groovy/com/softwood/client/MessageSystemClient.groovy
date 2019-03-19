@@ -65,6 +65,9 @@ interface MessageSystemClient {
     Enumeration<Message> browse (String queueName)
     Enumeration<Message> browse (QueueBrowser browser)
     Enumeration<Message> browse (Queue queue)
+    void browserStart()  //are these necessary need to test with/without
+    void browserStop()
+
 
     // excecute users closure asa resource with auto cleanup at end
     def withQueue (JmsConnectionType type, Queue queue, Closure closure)
@@ -74,6 +77,6 @@ interface MessageSystemClient {
     def tidyUpSender ()
     def tidyUpReceiver()
     def tidyUpPublisher()
-    def tidyUpSubscriber()
+    def tidyUpBrowser ()
 
 }

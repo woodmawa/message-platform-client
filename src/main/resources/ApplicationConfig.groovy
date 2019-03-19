@@ -9,7 +9,7 @@ messagePlatform {
         defaultProviderUrl = "t3://localhost:7001"
         mvaSenderSecurityPrincipal = 'cramer'
         mvaReceiverSecurityPrincipal = 'cortex'
-        mvaBrowserSecurityPrincipal = 'viewer'
+        mvaBrowserSecurityPrincipal = 'queueBrowser'
         orderQueue = 'jms/workOrderQueue'
         orderTopic = 'jms/workOrderTopic'
         orderResultsQueue = 'jms/workOrderResultsQueue'
