@@ -27,8 +27,8 @@ import javax.naming.NamingException
 
 trait BrowserTrait {
 
-    private ThreadLocal<QueueConnection> browserQconnection = new ThreadLocal<>()
-    private ThreadLocal<QueueSession> browserQsession = new ThreadLocal<>()
+    ThreadLocal<QueueConnection> browserQconnection = new ThreadLocal<>()
+    ThreadLocal<QueueSession> browserQsession = new ThreadLocal<>()
     private ThreadLocal<QueueBrowser> qBrowser = new ThreadLocal<>()
 
     /**

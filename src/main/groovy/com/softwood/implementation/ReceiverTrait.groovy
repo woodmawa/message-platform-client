@@ -27,8 +27,8 @@ import javax.naming.NamingException
  */
 trait ReceiverTrait {
 
-    private ThreadLocal<QueueConnection> receiverQconnection = new ThreadLocal<>()
-    private ThreadLocal<QueueSession> receiverQsession = new ThreadLocal<>()
+    ThreadLocal<QueueConnection> receiverQconnection = new ThreadLocal<>()
+    ThreadLocal<QueueSession> receiverQsession = new ThreadLocal<>()
     private ThreadLocal<QueueReceiver> qReceiver = new ThreadLocal<>()
 
     /**

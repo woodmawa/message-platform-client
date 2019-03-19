@@ -33,7 +33,7 @@ trait PublisherTrait {
     //make sender queue connection public in the implementing class - expect impl class to set this
     ThreadLocal<TopicConnection> publisherTconnection = new ThreadLocal<>()
 
-    private ThreadLocal<TopicSession> publisherTsession = new ThreadLocal<>()
+    ThreadLocal<TopicSession> publisherTsession = new ThreadLocal<>()
     private  ThreadLocal<TopicPublisher> tPublisher = new ThreadLocal<>()
 
 

@@ -61,6 +61,7 @@ interface MessageSystemClient {
     int browseQueueSize ()
     String browseTopOfQueue(Queue queue)
     String browseTopOfQueue()
+    Enumeration<Message> browse ()
     Enumeration<Message> browse (String queueName)
     Enumeration<Message> browse (QueueBrowser browser)
     Enumeration<Message> browse (Queue queue)

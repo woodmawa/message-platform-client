@@ -209,16 +209,4 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         result
     }
 
-    @Override
-    Message browse(Queue queue) {
-        return null
-    }
-
-    @Override
-    Message browse(String queueName) {
-        return null
-    }
-
-
-
 }

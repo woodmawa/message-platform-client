@@ -34,8 +34,8 @@ import javax.naming.NamingException
 //todo however this would work for only 1:n delivery (queue semantics) whereas topic subscription provides n:n
 trait SubscriberTrait {
 
-    private ThreadLocal<TopicConnection> subscriberTconnection = new ThreadLocal<>()
-    private ThreadLocal<TopicSession> subscriberTsession = new ThreadLocal<>()
+    ThreadLocal<TopicConnection> subscriberTconnection = new ThreadLocal<>()
+    ThreadLocal<TopicSession> subscriberTsession = new ThreadLocal<>()
     private ThreadLocal<TopicSubscriber> tSubscriber = new ThreadLocal<>()
 
     /**

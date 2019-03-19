@@ -164,6 +164,7 @@ class Launcher {
             println result*/
 
             def result = withSenderQueue (clos)
+            println "withSenderQueue : user closure returned : $result"
         }
 
         if (options.rscript) {
@@ -196,6 +197,7 @@ class Launcher {
             def clos = shell.evaluate("$text")
 
             def result = withReceiverQueue (clos)
+            println "withReceiverQueue :user closure returned : $result"
         }
 
     }
