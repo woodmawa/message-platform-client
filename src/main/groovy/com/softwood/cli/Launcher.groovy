@@ -124,6 +124,7 @@ class Launcher {
 
         }
 
+        //browse for size
         if (options.browseQueueName != null) {
             Queue q = null
             String lookupQname
