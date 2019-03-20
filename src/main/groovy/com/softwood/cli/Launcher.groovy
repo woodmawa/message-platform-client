@@ -42,19 +42,19 @@ class Launcher {
         @Option (shortName = 'r', longName = 'receive',  numberOfArguments = 1, optionalArg = true,  description = 'read message from jms Queue')
         List<String> receiveQ
 
-        @Option (shortName = 'es', longName = 'execute-sender', description = 'run script file as closure, will be passed JMS Sender session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        @Option (shortName = 'es', longName = 'execute-sender', description = "run script file as closure, will be passed JMS Sender session as 'it' param.  Default scripts backup is at ~/.scripts if script cant be found ")
         File sscript
 
-        @Option (shortName = 'er', longName = 'execute-receiver', description = 'run script file as closure, will be passed JMS Receiver session as param.  Default scripts backup is at ~/.scripts if script cant be found ')
+        @Option (shortName = 'er', longName = 'execute-receiver', description = "run script file as closure, will be passed JMS Receiver session as 'it' param.  Default scripts backup is at ~/.scripts if script cant be found ")
         File rscript
 
-        @Option (shortName = 'q', longName = 'queue', description = "override the default Queue - 'jms/workOrderQueue' setup in config.  provide the name, and sofwaree  will do a lookup and use this Queue instead ")
+        @Option (shortName = 'q', longName = 'queue', description = "override the default Queue - 'jms/workOrderQueue' setup in config.  provide the name, and software  will do a lookup and use this Queue instead ")
         String queueName
 
         @Option (shortName = 't', longName = 'topic', description = "override the default Topic - 'jms/workOrderTopic' setup in config.  provide the name sofwaree  will do a lookup and use this Queue instead ")
         String topicName
 
-        @Option (shortName = 'c', longName = 'credentials', description = "credentials required to validate script caller can execute actions on the command line  ")
+        @Option (shortName = 'c', longName = 'credentials', description = "TODO : credentials required to validate script caller can execute actions on the command line  ")
         String credentials
 
         @Option (shortName = 'br', longName = 'browse', numberOfArguments = 1, optionalArg = true, description = "browse queue - or DEFAULT_QUEUE if no queue is specified ")
