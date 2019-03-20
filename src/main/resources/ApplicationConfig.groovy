@@ -7,9 +7,9 @@ messagePlatform {
         hostname = 'localhost'
         port = '7001'   //default is 7002 for secure
         defaultProviderUrl = "t3://localhost:7001"
-        mvaSenderSecurityPrincipal = 'cramer'
-        mvaReceiverSecurityPrincipal = 'cortex'
-        mvaBrowserSecurityPrincipal = 'queueBrowser'
+        senderSecurityPrincipal = 'cramer'
+        receiverSecurityPrincipal = 'cortex'
+        browserSecurityPrincipal = 'queueBrowser'
         orderQueue = 'jms/workOrderQueue'
         orderTopic = 'jms/workOrderTopic'
         orderResultsQueue = 'jms/workOrderResultsQueue'
@@ -18,8 +18,8 @@ messagePlatform {
         DEFAULT_TOPIC = 'jms/workOrderTopic'
 
         defaultSubscriptionReceiveTimeout = 1L
-        INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
         defaultScriptDirectory = "~${File.separatorChar}.scripts"  //set to users home directory
+        INITIAL_CONTEXT_FACTORY = "weblogic.jndi.WLInitialContextFactory"
     }
 
     activeMQ {

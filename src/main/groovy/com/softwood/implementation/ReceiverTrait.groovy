@@ -70,8 +70,8 @@ trait ReceiverTrait {
             if (!receiverQconnection.get()) {
                 log.debug "createReceiverQueueConnection: no Q connection - so create one "
 
-                receiverPrinciple = env.get('mvaReceiverSecurityPrincipal')
-                receiverCredentials = env.get('mvaReceiverSecurityCredentials')
+                receiverPrinciple = env.get('receiverSecurityPrincipal')
+                receiverCredentials = env.get('receiverSecurityCredentials')
                 rqc = qcf.createQueueConnection(receiverPrinciple, receiverCredentials)
                 receiverQconnection.set(rqc)
                 log.debug ("Got QueueConnection " + rqc.toString())

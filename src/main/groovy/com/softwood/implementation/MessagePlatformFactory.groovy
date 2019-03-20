@@ -2,6 +2,8 @@ package com.softwood.implementation
 
 import com.softwood.client.AbstractMessagePlatformFactory
 import com.softwood.client.MessageSystemClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class NoMessagePlatformImplementation extends Exception {
     String message
@@ -19,9 +21,11 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
     Properties env = System.getProperties()
     ConfigSlurper slurper
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass())
+
     MessageSystemClient getMessagePlatformInstance (String messagePlatformType) {
         slurper = new ConfigSlurper()
-        String providerUrl, senderCredentials, receiverCredentials
+        String providerUrl, senderCredentials, receiverCredentials, browserCredentials
 
         ClassLoader classLoader = getClass().getClassLoader()
         // https://stackoverflow.com/questions/25362943/cant-load-resources-file-from-jar
@@ -46,16 +50,27 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                 else
                     providerUrl = "invalid"
                 String defaultProviderUrl = wls.defaultProviderUrl
-                senderCredentials = env.getProperty("MVA_SENDER_SECURITY_CREDENTIALS")
-                receiverCredentials = env.getProperty("MVA_RECEIVER_SECURITY_CREDENTIALS")
+                senderCredentials = env.getProperty("SENDER_SECURITY_CREDENTIALS")
+                receiverCredentials = env.getProperty("RECEIVER_SECURITY_CREDENTIALS")
+                browserCredentials = env.getProperty("BROWSER_SECURITY_CREDENTIALS")
+                //having read environment for security credentials - now set up
+                //as lower cased variables in the environment context.
+                //if null setup a hard coded default -- should probably throw an error though
                 if (!senderCredentials) {
-                    wls.put('mvaSenderSecurityCredentials', "testSender1")
+                    log.debug ("SENDER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    wls.put('senderSecurityCredentials', "testSender1")
                 } else
-                    wls.put ('mvaSenderSecurityCredentials', senderCredentials)
+                    wls.put ('senderSecurityCredentials', senderCredentials)
                 if (!receiverCredentials) {
-                    wls.put ('mvaReceiverSecurityCredentials', "testReceiver1")
+                    log.debug ("RECEIVER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    wls.put ('receiverSecurityCredentials', "testReceiver1")
                 } else
-                    wls.put ('mvaReceiverSecurityCredentials', receiverCredentials)
+                    wls.put ('receiverSecurityCredentials', receiverCredentials)
+                if (!browserCredentials) {
+                    log.debug ("BROWSER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    wls.put ('browserSecurityCredentials', "testBrowser1")
+                } else
+                    wls.put ('browserSecurityCredentials', browserCredentials)
                 return new WlsJmsMessagePlatform(wls)
             case "MQ" :
             case "ACTIVEMQ" :

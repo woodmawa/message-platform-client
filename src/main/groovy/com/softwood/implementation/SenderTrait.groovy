@@ -62,8 +62,8 @@ trait SenderTrait {
             if (!senderQconnection.get()) {
                 //set thread local connection {
 
-                senderPrinciple = env.get('mvaSenderSecurityPrincipal')
-                senderCredentials = env.get('mvaSenderSecurityCredentials')
+                senderPrinciple = env.get('senderSecurityPrincipal')
+                senderCredentials = env.get('senderSecurityCredentials')
                 qc = qcf.createQueueConnection(senderPrinciple, senderCredentials)
             } else
                 qc = senderQconnection.get()

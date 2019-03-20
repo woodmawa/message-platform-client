@@ -67,8 +67,8 @@ trait BrowserTrait {
             if (!browserQconnection.get()) {
                 println "createBrowserQueueConnection: no Q connection - so create one "
 
-                browserPrinciple = env.get('mvaBrowserSecurityPrincipal')
-                browserCredentials = env.get('mvaBrowserSecurityCredentials')
+                browserPrinciple = env.get('browserSecurityPrincipal')
+                browserCredentials = env.get('browserSecurityCredentials')
                 bqc = qcf.createQueueConnection(browserPrinciple, browserCredentials)
                 browserQconnection.set(bqc)
                 println("Got browser QueueConnection " + bqc.toString())
