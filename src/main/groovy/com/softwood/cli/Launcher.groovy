@@ -54,7 +54,7 @@ class Launcher {
         @Option (shortName = 'br', longName = 'browse', numberOfArguments = 1, optionalArg = true, description = "browse queue will return enumeration of entries on the queue - if no queue named then DEFAULT_QUEUE is browsed ")
         List<String> browseQueue
 
-        @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse queue and return the size of the messages on the queue - if no queueName provided will default to queue size for DEFAULT_QUEUE")
+        @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse named queue and return the size of the messages on the queue - if no queueName provided will default to queue size for DEFAULT_QUEUE")
         List<String> browseQueueName
 
         @Unparsed (description = 'positional parameters')
