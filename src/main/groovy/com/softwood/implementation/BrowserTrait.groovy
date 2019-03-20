@@ -1,5 +1,7 @@
 package com.softwood.implementation
 
+import org.slf4j.Logger
+
 import javax.jms.JMSException
 import javax.jms.Message
 import javax.jms.Queue
@@ -31,6 +33,8 @@ trait BrowserTrait {
     ThreadLocal<QueueSession> browserQsession = new ThreadLocal<>()
     private ThreadLocal<QueueBrowser> qBrowser = new ThreadLocal<>()
 
+    Logger log = this.getLogger()  //get implementing classes logger
+
     /**
      * use queue connection factory to create QueueConnection object for sender using appropriate
      * security principal and credentials.  queue connection created is also stored in a threadlocal
@@ -50,7 +54,7 @@ trait BrowserTrait {
         if (!qcf) {
             try {
                 qcf = (QueueConnectionFactory) ctx.lookup(QCF_NAME)
-                println("Got QueueConnectionFactory " + qcf.toString())
+                log.debug ("createBrowserQueueConnection: Got QueueConnectionFactory " + qcf.toString())
 
             }
             catch (NamingException ne) {
@@ -65,13 +69,13 @@ trait BrowserTrait {
             //set thread local connection {
 
             if (!browserQconnection.get()) {
-                println "createBrowserQueueConnection: no Q connection - so create one "
+                log.debug "createBrowserQueueConnection:createBrowserQueueConnection: no Q connection - so create one "
 
                 browserPrinciple = env.get('browserSecurityPrincipal')
                 browserCredentials = env.get('browserSecurityCredentials')
                 bqc = qcf.createQueueConnection(browserPrinciple, browserCredentials)
                 browserQconnection.set(bqc)
-                println("Got browser QueueConnection " + bqc.toString())
+                log.debug ("createBrowserQueueConnection:Got browser QueueConnection " + bqc.toString())
             } else
             //just return existing thread local version
                 bqc = browserQconnection.get()
@@ -93,13 +97,13 @@ trait BrowserTrait {
         if (!browserQconnection.get()) {
             createBrowserQueueConnection()
         }
-        println("start browser QueueConnection on ${browserQconnection.get()}" )
+        log.debug ("browserStart:start browser QueueConnection on ${browserQconnection.get()}" )
 
         browserQconnection.get()?.start()
     }
 
     void browserStop() {
-        println("stop browser QueueConnection " )
+        log.debug ("browserStop: stop browser QueueConnection " )
 
         browserQconnection.get()?.stop()
     }
@@ -119,7 +123,7 @@ trait BrowserTrait {
         try {
             //if no sender queue connection - then build one
             if (!browserQconnection.get()) {
-                println "createBrowserQueueSession: no existing  Q connection for thread - create one "
+                log.debug "createBrowserQueueSession:createBrowserQueueSession: no existing  Q connection for thread - create one "
                 if (qc == null) {
                     //invoke the impl class parent service to build queueConnection for sender
                     browserQconnection.set(createReceiverQueueConnection())
@@ -128,7 +132,7 @@ trait BrowserTrait {
             }
             if (!browserQsession.get()) {
                 // set thread local session
-                println("createBrowserQueueSession: no QueueSession created one for thread - " + qs.toString())
+                log.debug ("createBrowserQueueSession:createBrowserQueueSession: no QueueSession created one for thread - " + qs.toString())
                 browserQsession.set(qs = browserQconnection.get().createQueueSession(false, Session.AUTO_ACKNOWLEDGE))
             }else {
                 //just return existing thread local Q session
@@ -155,7 +159,7 @@ trait BrowserTrait {
 
             if (!qBrowser.get()) {
                 qBrowser.set(browser = qbsession.createBrowser(q))
-                println("Got QueueBrowser " + browser.toString())
+                log.debug ("createQueueBrowser:Got QueueBrowser " + browser.toString())
             } else {
                 browser = qBrowser.get()
             }
@@ -176,7 +180,7 @@ trait BrowserTrait {
         def browser
         if (!qBrowser.get()) {
 
-            println("browseQueue, no browser defined - create one  " )
+            log.debug ("browseQueueSize:browseQueue, no browser defined - create one  " )
 
             Queue q = queue
 
@@ -187,7 +191,7 @@ trait BrowserTrait {
 
         browser = qBrowser.get()
 
-        println("browsing Queue " + browser.getQueue().queueName)
+        log.debug ("browseQueueSize:browsing Queue " + browser.getQueue().queueName)
         Enumeration list =  browse(browser)
         //not sure what order asc/desc
         list?.toList().size() ?: 0
@@ -202,7 +206,7 @@ trait BrowserTrait {
         def browser
         if (!qBrowser.get()) {
 
-            println("browseQueueSize, no browser defined - create one  " )
+            log.debug ("browseQueueSize: browseQueueSize, no browser defined - create one  " )
 
             Queue q
             String qname
@@ -220,7 +224,7 @@ trait BrowserTrait {
 
         browser = qBrowser.get()
 
-        println("browsing Queue " + browser.getQueue().queueName)
+        log.debug ("browseQueueSize:browsing Queue " + browser.getQueue().queueName)
         Enumeration list =  browse(browser)
         //not sure what order asc/desc
         list?.toList().size() ?: 0
@@ -235,7 +239,7 @@ trait BrowserTrait {
         def browser
         if (!qBrowser.get()) {
 
-            println("browseQueueSize, no browser defined - create one  " )
+            log.debug ("browseTopOfQueue:browseQueueSize, no browser defined - create one  " )
 
             Queue q
             String qname
@@ -252,7 +256,7 @@ trait BrowserTrait {
 
         browser = qBrowser.get()
 
-        println("browsing Queue " + browser.getQueue().queueName)
+        log.debug ("browseTopOfQueue: browsing Queue " + browser.getQueue().queueName)
         Enumeration list =  browse(browser) as TextMessage
         //not sure what order asc/desc
         Message m
@@ -277,7 +281,7 @@ trait BrowserTrait {
             queueBrowser = qBrowser.get()
         }
 
-        println("browsing Queue " + queueBrowser.getQueue().queueName)
+        log.debug ("browseTopOfQueue: browsing Queue " + queueBrowser.getQueue().queueName)
         Enumeration list =  browse(queueBrowser)
         //not sure what order asc/desc
         Message m
@@ -299,7 +303,7 @@ trait BrowserTrait {
         def text
         Enumeration list
         try {
-            println("receive : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
+            log.debug ("browse: using  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
 
             list = qBrowser?.getEnumeration ()
         }
@@ -335,7 +339,7 @@ trait BrowserTrait {
         def text
         Enumeration elist
         try {
-            println("receive : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
+            log.debug("browse : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
 
             elist = qBrowser?.getEnumeration ()
         }
@@ -379,7 +383,7 @@ trait BrowserTrait {
         def text
         Enumeration elist
         try {
-            println("browse : ${qbrowser.getQueueName()} " )
+            log.debug ("browse : ${qbrowser.getQueueName()} " )
 
             elist = browse(qbrowser)
         }
