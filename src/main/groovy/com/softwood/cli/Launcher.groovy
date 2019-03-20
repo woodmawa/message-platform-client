@@ -1,21 +1,15 @@
 package com.softwood.cli
 
-import com.softwood.client.AbstractMessagePlatformFactory
+
 import com.softwood.client.MessagePlatformFactoryProducer
 import com.softwood.client.MessageSystemClient
 import com.softwood.implementation.JmsConnectionType
-import com.softwood.implementation.MessagePlatformFactory
-import com.softwood.implementation.WlsJmsMessagePlatform
 import groovy.cli.Option
 import groovy.cli.Unparsed
 import groovy.cli.picocli.CliBuilder
-import picocli.CommandLine
 
 import javax.jms.Message
 import javax.jms.Queue
-import javax.jms.Topic
-import java.nio.file.FileSystems
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Matcher
 
@@ -31,7 +25,7 @@ class Launcher {
         @Option (shortName = 'h', longName ='help', description = 'executable jar,  help ')
         boolean help
 
-        @Option (shortName = 's', longName ='send', description = 'send message to jms Queue')
+        @Option (shortName = 's', longName ='send', description = 'send text message (enclose param in "")  to DEFAULT_QUEUE jms Queue')
         String sendText
 
         //@Option (paramLabel='Text', description = 'text to send to queue ')
@@ -57,11 +51,11 @@ class Launcher {
         @Option (shortName = 'c', longName = 'credentials', description = "TODO : credentials required to validate script caller can execute actions on the command line  ")
         String credentials
 
-        @Option (shortName = 'br', longName = 'browse', numberOfArguments = 1, optionalArg = true, description = "browse queue - or DEFAULT_QUEUE if no queue is specified ")
+        @Option (shortName = 'br', longName = 'browse', numberOfArguments = 1, optionalArg = true, description = "browse queue will return enumeration of entries on the queue - if no queue named then DEFAULT_QUEUE is browsed ")
         List<String> browseQueue
 
-        @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse queue return the size of the messages on the queue ")
-        List<String> browseQueueNameSize
+        @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse queue and return the size of the messages on the queue - if no queueName provided will default to queue size for DEFAULT_QUEUE")
+        List<String> browseQueueName
 
         @Unparsed (description = 'positional parameters')
         List remaining
@@ -122,11 +116,11 @@ class Launcher {
 
         }
 
-        if (options.browseQueueNameSize != null) {
+        if (options.browseQueueName != null) {
             Queue q = null
             String lookupQname
-            if (options.browseQueueNameSize.size() > 0)
-                lookupQname = options.browseQueueNameSize[0]
+            if (options.browseQueueName.size() > 0)
+                lookupQname = options.browseQueueName[0]
             else {
                 Map envMap = mclient.getPlatformEnvironment()
                 lookupQname = envMap.get("DEFAULT_QUEUE")
