@@ -23,7 +23,7 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass())
 
-    MessageSystemClient getMessagePlatformInstance (String messagePlatformType) {
+    MessageSystemClient getMessagePlatformInstance (String messagePlatformType, String altHostname=null) {
         slurper = new ConfigSlurper()
         String providerUrl, senderCredentials, receiverCredentials, browserCredentials
         String protocol, hostname, port
@@ -46,16 +46,18 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
             case "WEBLOGIC" :
                 def mp = config.messagePlatform
                 Map wls = config.messagePlatform.weblogic
-                if (wls)
-                    providerUrl = "${wls?.protocol ?: ''}://${wls?.hostname ?: 'localhost'}:${wls?.port ?: '7001'}"
-                else
-                    providerUrl = "invalid"
                 String defaultProviderUrl = wls.defaultProviderUrl
                 senderCredentials = env.get("SENDER_SECURITY_CREDENTIALS")
                 receiverCredentials = env.get("RECEIVER_SECURITY_CREDENTIALS")
                 browserCredentials = env.get("BROWSER_SECURITY_CREDENTIALS")
                 protocol = env.get("JMS_PROTOCOL")
-                hostname = env.get("JMS_HOSTNAME")
+                if (altHostname) {
+                    //if set on the cli interface use this as host
+                    hostname = altHostname
+                } else {
+                    //else see if one has been set in the users environment variables
+                    hostname = env.get("JMS_HOSTNAME")
+                }
                 port = env.get("JMS_PORT")
 
                 //having read environment for security credentials - now set up
@@ -77,14 +79,23 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                 } else
                     wls.put ('browserSecurityCredentials', browserCredentials)
                 //if environment variables present use these as default
-                if (!hostname) {
+                if (hostname) {
                     wls.put('hostname', hostname)
                 }
-                if (!port) {
-                    wls.put('port', hostname)
+                if (port) {
+                    wls.put('port', port)
                 }
-                if (!protocol) {
+                if (protocol) {
                     wls.put('protocol', protocol)
+                }
+                if (wls)
+                    providerUrl = "${wls?.protocol ?: 't3'}://${wls?.hostname ?: 'localhost'}:${wls?.port ?: '7001'}"
+                else
+                    providerUrl = "invalid"
+
+                if (providerUrl) {
+                    log.debug "setting providerUrl as $providerUrl"
+                    wls.put('providerUrl', providerUrl)
                 }
 
                 return new WlsJmsMessagePlatform(wls)

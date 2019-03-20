@@ -22,8 +22,11 @@ class Launcher {
 
     static class CliOptions {
 
-        @Option (shortName = 'h', longName ='help', description = 'executable jar,  help ')
+        @Option (shortName = 'h', longName ='help', description = 'executable jar,  --help ')
         boolean help
+
+        @Option (shortName = 'host', longName ='hostname', description = 'override hostname to use  ')
+        String hostname
 
         @Option (shortName = 's', longName ='send', description = 'send text message (enclose param in "")  to DEFAULT_QUEUE jms Queue')
         String sendText
@@ -84,9 +87,14 @@ class Launcher {
         cli.width = 80 //default is 74
         cli.parseFromInstance(options, args)
 
-        //now get message platform from Factory
-        mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+        //check if ovveride for host been set - start client with override
+        if (options.hostname) {
+            mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS", options.hostname )
 
+        }else {
+            //now get message platform from Factory
+            mclient = MessagePlatformFactoryProducer.getFactory().getMessagePlatformInstance("WLS")
+        }
 
         def message
 

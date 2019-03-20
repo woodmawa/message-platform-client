@@ -57,7 +57,7 @@ class WlsJmsMessagePlatform implements MessageSystemClient,
         //store local operating environment variables
         operatingEnv = env
 
-        if (!providerUrl) {
+        if (!providerUrl || providerUrl == 'invalid') {
             throw new InvalidParameterException("providerUrl ($providerUrl) is not a valid JMS provider")
             System.exit(-1)
         }
