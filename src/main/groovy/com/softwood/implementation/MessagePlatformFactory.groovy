@@ -18,7 +18,7 @@ class NoMessagePlatformImplementation extends Exception {
  */
 class MessagePlatformFactory implements AbstractMessagePlatformFactory {
 
-    Properties env = System.getProperties()
+    Map env = System.getenv()
     ConfigSlurper slurper
 
     private final Logger log = LoggerFactory.getLogger(this.getClass())
@@ -50,9 +50,9 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                 else
                     providerUrl = "invalid"
                 String defaultProviderUrl = wls.defaultProviderUrl
-                senderCredentials = env.getProperty("SENDER_SECURITY_CREDENTIALS")
-                receiverCredentials = env.getProperty("RECEIVER_SECURITY_CREDENTIALS")
-                browserCredentials = env.getProperty("BROWSER_SECURITY_CREDENTIALS")
+                senderCredentials = env.get("SENDER_SECURITY_CREDENTIALS")
+                receiverCredentials = env.get("RECEIVER_SECURITY_CREDENTIALS")
+                browserCredentials = env.get("BROWSER_SECURITY_CREDENTIALS")
                 //having read environment for security credentials - now set up
                 //as lower cased variables in the environment context.
                 //if null setup a hard coded default -- should probably throw an error though
