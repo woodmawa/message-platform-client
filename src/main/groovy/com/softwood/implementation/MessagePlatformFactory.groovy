@@ -26,6 +26,7 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
     MessageSystemClient getMessagePlatformInstance (String messagePlatformType) {
         slurper = new ConfigSlurper()
         String providerUrl, senderCredentials, receiverCredentials, browserCredentials
+        String protocol, hostname, port
 
         ClassLoader classLoader = getClass().getClassLoader()
         // https://stackoverflow.com/questions/25362943/cant-load-resources-file-from-jar
@@ -53,6 +54,10 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                 senderCredentials = env.get("SENDER_SECURITY_CREDENTIALS")
                 receiverCredentials = env.get("RECEIVER_SECURITY_CREDENTIALS")
                 browserCredentials = env.get("BROWSER_SECURITY_CREDENTIALS")
+                protocol = env.get("JMS_PROTOCOL")
+                hostname = env.get("JMS_HOSTNAME")
+                port = env.get("JMS_PORT")
+
                 //having read environment for security credentials - now set up
                 //as lower cased variables in the environment context.
                 //if null setup a hard coded default -- should probably throw an error though
@@ -71,6 +76,17 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                     wls.put ('browserSecurityCredentials', "testBrowser1")
                 } else
                     wls.put ('browserSecurityCredentials', browserCredentials)
+                //if environment variables present use these as default
+                if (!hostname) {
+                    wls.put('hostname', hostname)
+                }
+                if (!port) {
+                    wls.put('port', hostname)
+                }
+                if (!protocol) {
+                    wls.put('protocol', protocol)
+                }
+
                 return new WlsJmsMessagePlatform(wls)
             case "MQ" :
             case "ACTIVEMQ" :
