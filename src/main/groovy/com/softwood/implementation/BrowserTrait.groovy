@@ -143,7 +143,7 @@ trait BrowserTrait {
         qs
     }
 
-    QueueReceiver createQueueBrowser(Queue q) {
+    QueueBrowser createQueueBrowser(Queue q) {
 
         QueueBrowser browser
         if (!browserQsession.get())
@@ -172,18 +172,13 @@ trait BrowserTrait {
      * delegates to browse to get list and then calls size()
      * @return
      */
-    int browseQueueSize (Queue queueName = null) {
+    int browseQueueSize (Queue queue) {
         def browser
         if (!qBrowser.get()) {
 
             println("browseQueue, no browser defined - create one  " )
 
-            Queue q
-            String qname
-            if (queueName == null) {
-                qname = this.operatingEnv.get('orderQueue') ?: this.DEFAULT_QUEUE
-            }
-            q = this.getQueue(qname)
+            Queue q = queue
 
             browser = createQueueBrowser (q)
             qBrowser.set (browser)
@@ -200,6 +195,38 @@ trait BrowserTrait {
 
 
     /**
+     * delegates to browse to get list and then calls size()
+     * @return
+     */
+    int browseQueueSize (String queueName = null) {
+        def browser
+        if (!qBrowser.get()) {
+
+            println("browseQueueSize, no browser defined - create one  " )
+
+            Queue q
+            String qname
+            if (queueName == null) {
+                qname = this.operatingEnv.get('orderQueue') ?: this.DEFAULT_QUEUE
+            } else
+                qname = queueName
+
+            q = this.getQueue(qname)
+
+            browser = createQueueBrowser (q)
+            qBrowser.set (browser)
+
+        }
+
+        browser = qBrowser.get()
+
+        println("browsing Queue " + browser.getQueue().queueName)
+        Enumeration list =  browse(browser)
+        //not sure what order asc/desc
+        list?.toList().size() ?: 0
+    }
+
+    /**
      * delegates to browse (browser) using stored thread local
      *
      * @return toString on the message
@@ -208,7 +235,7 @@ trait BrowserTrait {
         def browser
         if (!qBrowser.get()) {
 
-            println("browseQueue, no browser defined - create one  " )
+            println("browseQueueSize, no browser defined - create one  " )
 
             Queue q
             String qname
