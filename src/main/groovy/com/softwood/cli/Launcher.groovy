@@ -297,7 +297,6 @@ class Launcher {
 
     static List<Message> browse (queueName=null) {
         def result
-        mclient.browserStart()
         if (queueName)
             result = mclient.browse (queueName)
         else
@@ -308,7 +307,6 @@ class Launcher {
     }
 
     static int browseQueueSize (queue=null) {
-        mclient.browserStart()
         int size = mclient.browseQueueSize (queue)
 
         mclient.tidyUpBrowser()

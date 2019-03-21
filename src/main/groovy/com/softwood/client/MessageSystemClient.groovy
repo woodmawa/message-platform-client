@@ -65,8 +65,6 @@ interface MessageSystemClient {
     List<Message> browse (String queueName)
     List<Message> browse (QueueBrowser browser)
     List<Message> browse (Queue queue)
-    void browserStart()  //are these necessary need to test with/without
-    void browserStop()
 
 
     // excecute users closure asa resource with auto cleanup at end

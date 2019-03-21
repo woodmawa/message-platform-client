@@ -88,25 +88,6 @@ trait BrowserTrait {
         bqc
     }
 
-    /**
-     * do i need to start q to peek at it ??  - needs a test
-     * need to start a connection before you can get messages from it
-     */
-    void browserStart () {
-
-        if (!browserQconnection.get()) {
-            createBrowserQueueConnection()
-        }
-        log.debug ("browserStart:start browser QueueConnection on ${browserQconnection.get()}" )
-
-        browserQconnection.get()?.start()
-    }
-
-    void browserStop() {
-        log.debug ("browserStop: stop browser QueueConnection " )
-
-        browserQconnection.get()?.stop()
-    }
 
     /**
      * creates a new QueueSession from appropriate QueueConnection for either browsing a queue.
@@ -400,7 +381,6 @@ trait BrowserTrait {
 
     def tidyUpBrowser () {
         qBrowser.set(null)
-        browserQconnection.get().stop()
 
         browserQsession.get()?.close()
         browserQconnection.get()?.close()
