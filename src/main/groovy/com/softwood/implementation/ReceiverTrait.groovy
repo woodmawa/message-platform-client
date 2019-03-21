@@ -121,7 +121,7 @@ trait ReceiverTrait {
         try {
             //if no sender queue connection - then build one
             if (!receiverQconnection.get()) {
-                log.debug() "createReceiverQueueSession: no existing  Q connection for thread - create one "
+                log.debug() ("createReceiverQueueSession: no existing  Q connection for thread - create one ")
                 if (qc == null) {
                     //invoke the impl class parent service to build queueConnection for sender
                     receiverQconnection.set(createReceiverQueueConnection())
