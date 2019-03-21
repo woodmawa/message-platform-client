@@ -10,6 +10,7 @@ import groovy.cli.picocli.CliBuilder
 
 import javax.jms.Message
 import javax.jms.Queue
+import javax.jms.TextMessage
 import java.nio.file.Paths
 import java.util.regex.Matcher
 
@@ -59,6 +60,9 @@ class Launcher {
 
         @Option (shortName = 'qs', longName = 'queue-size', numberOfArguments = 1, optionalArg = true, description = "browse named queue and return the size of the messages on the queue - if no queueName provided will default to queue size for DEFAULT_QUEUE")
         List<String> browseQueueName
+
+        @Option (shortName = 'env', longName = 'get-environment', description = "print the environment build for the MessagePlatform Instance")
+        boolean getenv
 
         @Unparsed (description = 'positional parameters')
         List remaining
@@ -124,6 +128,19 @@ class Launcher {
 
         }
 
+        if (options.getenv) {
+            Map env = mclient.getPlatformEnvironment()
+            println "get-environment: working environment variables"
+            env.each {key, value ->
+                if (key.contains ('Credentials')) {
+                    printf "\tkey: %-34.34s %5s value : [********]\n", key, " ", value
+                } else {
+                    printf "\tkey: %-34.34s %5s value : [%-20s]\n", key, " ", value
+                }
+
+            }
+        }
+
         //browse for size
         if (options.browseQueueName != null) {
             Queue q = null
@@ -140,14 +157,28 @@ class Launcher {
             println "read message queue size  : $size, passsed Q: ${lookupQname ?: mclient.getPlatformEnvironmentProperty('orderQueue') }"
         }
 
+        //browse a queue
         if (options.browseQueue != null) {
             Queue q = null
             String lookupQname
-            lookupQname = options.browseQueue[0]
-            q = mclient.getQueue(lookupQname)
-            message = browse(q)
+            if (options.browseQueue.size() >0)
+                lookupQname = options.browseQueue[0]
+            else
+                lookupQname = mclient.getPlatformEnvironment().get ('DEFAULT_QUEUE')
 
-            println "read message : $message, passsed Q: ${lookupQname ?: mclient.getPlatformEnvironmentProperty('orderQueue') }"
+            q = mclient.getQueue(lookupQname)
+            List resultsList = browse(q)
+
+            if (resultsList?.size() > 0) {
+                resultsList.eachWithIndex {Message mess, idx ->
+                    if (mess instanceof TextMessage) {
+                        println "text message [$idx] : ${mess.getText()}"
+                    } else {
+                        println "message [$idx] : ${mess.toString()}"
+                    }
+                }
+            } else
+                println "queue ${q.queueName} has no entries"
         }
 
         if ((message = options.sendText)) {
@@ -264,9 +295,13 @@ class Launcher {
         result
     }
 
-    static Enumeration<Message> browse (queue=null) {
+    static List<Message> browse (queueName=null) {
+        def result
         mclient.browserStart()
-        def result = mclient.browse ()
+        if (queueName)
+            result = mclient.browse (queueName)
+        else
+            result = mclient.browse ()
 
         mclient.tidyUpBrowser()
         result

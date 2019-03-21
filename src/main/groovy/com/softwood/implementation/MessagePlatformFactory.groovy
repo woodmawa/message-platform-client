@@ -64,17 +64,17 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                 //as lower cased variables in the environment context.
                 //if null setup a hard coded default -- should probably throw an error though
                 if (!senderCredentials) {
-                    log.debug ("SENDER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    log.debug ("getMessagePlatformInstance: SENDER_SECURITY_CREDENTIALS not set in environment - setting a default")
                     wls.put('senderSecurityCredentials', "testSender1")
                 } else
                     wls.put ('senderSecurityCredentials', senderCredentials)
                 if (!receiverCredentials) {
-                    log.debug ("RECEIVER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    log.debug ("getMessagePlatformInstance: RECEIVER_SECURITY_CREDENTIALS not set in environment - setting a default")
                     wls.put ('receiverSecurityCredentials', "testReceiver1")
                 } else
                     wls.put ('receiverSecurityCredentials', receiverCredentials)
                 if (!browserCredentials) {
-                    log.debug ("BROWSER_SECURITY_CREDENTIALS not set in environment - setting a default")
+                    log.debug ("getMessagePlatformInstance: BROWSER_SECURITY_CREDENTIALS not set in environment - setting a default")
                     wls.put ('browserSecurityCredentials', "testBrowser1")
                 } else
                     wls.put ('browserSecurityCredentials', browserCredentials)
@@ -94,7 +94,7 @@ class MessagePlatformFactory implements AbstractMessagePlatformFactory {
                     providerUrl = "invalid"
 
                 if (providerUrl) {
-                    log.debug "setting providerUrl as $providerUrl"
+                    log.debug "getMessagePlatformInstance: setting providerUrl as $providerUrl for MessagePlatform"
                     wls.put('providerUrl', providerUrl)
                 }
 

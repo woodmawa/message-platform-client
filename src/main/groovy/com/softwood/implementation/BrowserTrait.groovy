@@ -299,7 +299,7 @@ trait BrowserTrait {
      * @param qBrowser
      * @return
      */
-    Enumeration<Message> browse(QueueBrowser qBrowser) {
+    List<Message> browse(QueueBrowser qBrowser) {
         def text
         Enumeration list
         try {
@@ -315,7 +315,7 @@ trait BrowserTrait {
         if (list == null) {
             list = []
         }
-        return list
+        return list?.toList()
     }
 
     /**
@@ -323,7 +323,7 @@ trait BrowserTrait {
      * @param queue to browse
      * @return Enumeration<Message>
      */
-    Enumeration<Message> browse(Queue queue) {
+    List<Message> browse(Queue queue) {
 
         if (!qBrowser.get()){
             QueueSession qs = createBrowserQueueSession(browserQconnection.get())
@@ -339,9 +339,9 @@ trait BrowserTrait {
         def text
         Enumeration elist
         try {
-            log.debug("browse : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.getQueue().queueName)
+            log.debug("browse : use  " + qBrowser.toString() + " to read from Q : " + qBrowser?.get()?.getQueue().queueName)
 
-            elist = qBrowser?.getEnumeration ()
+            elist = qBrowser.get()?.getEnumeration ()
         }
         catch (JMSException jmse) {
             tidyUpBrowser()
@@ -351,7 +351,7 @@ trait BrowserTrait {
         if (elist == null) {
             elist = []
         }
-        return elist
+        return elist?.toList()
     }
 
     /**
@@ -359,7 +359,7 @@ trait BrowserTrait {
      * @param queue to browse
      * @return Enumeration<Message>
      */
-    Enumeration<Message> browse(String queueName = null) {
+    List<Message> browse(String queueName = null) {
 
         Queue queue
         Queue qbrowser
@@ -381,7 +381,7 @@ trait BrowserTrait {
 
 
         def text
-        Enumeration elist
+        List elist
         try {
             log.debug ("browse : ${qbrowser.getQueueName()} " )
 

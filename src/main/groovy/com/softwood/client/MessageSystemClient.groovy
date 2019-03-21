@@ -61,10 +61,10 @@ interface MessageSystemClient {
     int browseQueueSize ()
     String browseTopOfQueue(Queue queue)
     String browseTopOfQueue()
-    Enumeration<Message> browse ()
-    Enumeration<Message> browse (String queueName)
-    Enumeration<Message> browse (QueueBrowser browser)
-    Enumeration<Message> browse (Queue queue)
+    List<Message> browse ()
+    List<Message> browse (String queueName)
+    List<Message> browse (QueueBrowser browser)
+    List<Message> browse (Queue queue)
     void browserStart()  //are these necessary need to test with/without
     void browserStop()
 
