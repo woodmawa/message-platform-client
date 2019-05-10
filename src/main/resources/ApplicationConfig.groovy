@@ -3,10 +3,10 @@ messagePlatform {
 
     //this is saved as platform environment in the platform instance
     weblogic {
-        protocol = 't3'  //change to 't3s' for secure connection
+        protocol = 't3s'  //change to 't3s' for secure connection
         hostname = 'localhost'
         port = '7001'   //default is 7002 for secure
-        defaultProviderUrl = "t3://localhost:7001"
+        defaultProviderUrl = "t3s://localhost:7001"
         senderSecurityPrincipal = 'cramer'
         receiverSecurityPrincipal = 'cortex'
         browserSecurityPrincipal = 'queueBrowser'
