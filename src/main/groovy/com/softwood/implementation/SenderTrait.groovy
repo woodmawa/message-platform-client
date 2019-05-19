@@ -191,3 +191,4 @@ trait SenderTrait {
         senderQconnection.set (null)
     }
 }
+
